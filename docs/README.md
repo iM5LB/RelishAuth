@@ -1,8 +1,8 @@
 # RelishAuth
 
-**Advanced Authentication System for Velocity Proxy Servers** 🔐
+**Advanced Authentication System for Velocity Proxy Servers**
 
-RelishAuth is a powerful, feature-rich authentication plugin designed specifically for Velocity proxy servers. It provides multiple authentication methods, Discord integration, premium account support, and robust security features to protect your Minecraft network.
+RelishAuth is a powerful authentication plugin designed for Velocity proxy servers. It provides multiple authentication methods, Discord integration, premium account support, and robust security features to protect your Minecraft network.
 
 ## ✨ Key Features
 
@@ -35,75 +35,107 @@ RelishAuth is a powerful, feature-rich authentication plugin designed specifical
 - **MySQL/MariaDB** - Network database support for multi-server setups
 - **Connection Pooling** - High-performance HikariCP integration
 
-## 🚀 Quick Start
+## 📥 Download
 
-Get RelishAuth up and running in minutes:
+- **Modrinth**: [Download RelishAuth](https://modrinth.com/plugin/relishauth)
+- **GitHub**: [View on GitHub](https://github.com/iM5LB/relishauth)
 
-1. **Download** the plugin JAR file
-2. **Install** [LimboAPI](https://github.com/Elytrium/LimboAPI) (required dependency)
-3. **Place** both JARs in your Velocity `plugins/` folder
-4. **Restart** your Velocity proxy
-5. **Configure** `plugins/relishauth/config.yml` to your needs
-6. **Optional**: Set up Discord bot for enhanced features
+## 📚 Documentation
 
-[View detailed installation guide →](Installation.md)
-
-## 📖 Documentation
-
-### Getting Started
 - [Quick Start Guide](QuickStart.md) - Get up and running in 5 minutes
-- [Installation](Installation.md) - Detailed installation instructions
-- [Configuration](Configuration.md) - Complete configuration guide
-
-### Features
-- [Authentication Methods](AuthMethods.md) - Password, Discord, and Premium authentication
+- [Installation Guide](Installation.md) - Detailed installation instructions
+- [Configuration Guide](Configuration.md) - Complete configuration reference
+- [Authentication Methods](AuthMethods.md) - Password, Discord, and Premium auth
 - [Discord Bot Setup](DiscordBot.md) - Set up Discord integration
-- [Commands](Commands.md) - Player and admin commands
-- [Permissions](Permissions.md) - Permission nodes and setup
-
-### Advanced
+- [Commands Reference](Commands.md) - All available commands
 - [Security Settings](Security.md) - Security features and best practices
-- [Database Setup](Database.md) - SQLite and MySQL configuration
-- [Developer API](API.md) - API for developers
-- [Troubleshooting](Troubleshooting.md) - Common issues and solutions
 
-## 🎯 Use Cases
+## 🎯 Quick Start
 
-### Community Servers
-Perfect for community servers that want Discord-integrated authentication:
-- Players link their Discord accounts
-- Instant verification through Discord DMs
-- Join notifications for account security
-- Admin management through Discord commands
+1. Download RelishAuth from [Modrinth](https://modrinth.com/plugin/relishauth)
+2. Download [LimboAPI](https://github.com/Elytrium/LimboAPI) (required dependency)
+3. Place both JARs in your Velocity `plugins/` folder
+4. Restart your Velocity proxy
+5. Configure `plugins/relishauth/config.yml`
+6. Optional: Set up Discord bot for enhanced features
 
-### Premium Networks
-Ideal for networks with premium and cracked player support:
-- Premium players auto-login instantly
-- Cracked players use password authentication
-- Session management for convenience
-- IP validation for security
+[View detailed quick start guide →](QuickStart.md)
 
-### High-Security Servers
-For servers requiring maximum security:
-- Hybrid authentication (password + Discord)
-- Short session durations
-- IP validation enabled
-- Rate limiting and brute force protection
+## 💬 Support
+
+- **Discord**: [Join our server](https://discord.gg/jDr2KZcGXk)
+- **Issues**: [Report on GitHub](https://github.com/iM5LB/relishauth/issues)
+- **Documentation**: [Full docs](https://im5lb.github.io/relishauth/)
 
 ## 🔧 Requirements
 
-- **Velocity Proxy** 3.4.0 or higher
-- **Java** 21 or higher
-- **LimboAPI** plugin (required dependency)
-- **Discord Bot** (optional, for Discord features)
+- **Velocity Proxy**: 3.4.0 or higher
+- **Java**: 21 or higher
+- **LimboAPI**: Required dependency
+- **Discord Bot**: Optional, for Discord features
 
-## 📞 Support & Links
+## 🌟 Why RelishAuth?
 
-- **Discord**: [Join our Discord](https://discord.gg/jDr2KZcGXk) for support and updates
-- **Modrinth**: [Download from Modrinth](https://modrinth.com/plugin/relishauth)
-- **GitHub**: [View on GitHub](https://github.com/iM5LB/relishauth)
-- **Donate**: [Support development](https://creators.sa/m5lb)
+- **Multiple Auth Methods** - Password, Discord, or Premium auto-login
+- **Highly Secure** - Argon2 hashing, rate limiting, IP validation
+- **Discord Integration** - Full Discord bot with slash commands
+- **Multi-Language** - English and Arabic support
+- **Flexible Database** - SQLite or MySQL/MariaDB
+- **Active Development** - Regular updates and new features
+
+## 🎮 Use Cases
+
+### Community Servers
+Perfect for Discord-centric communities with seamless Discord authentication and join notifications.
+
+### Premium Networks
+Ideal for networks with premium and cracked player support - premium players auto-login instantly.
+
+### High-Security Servers
+For servers requiring maximum security with hybrid authentication and strict session management.
+
+## 📊 Authentication Methods
+
+| Method | Setup | Security | Best For |
+|--------|-------|----------|----------|
+| **Password** | Easy | High | Traditional servers |
+| **Discord** | Medium | Very High | Discord communities |
+| **Premium** | Easy | Medium | Premium players |
+| **Hybrid** | Medium | Maximum | High-security servers |
+
+[Learn more about authentication methods →](AuthMethods.md)
+
+## 🚀 Features Overview
+
+### Player Features
+- Create and manage passwords
+- Link Discord accounts
+- Configurable session durations
+- Join notifications via Discord
+- Account information display
+
+### Admin Features
+- Reload configuration without restart
+- View player account information
+- Unlink player Discord accounts
+- Block usernames from specific IPs
+- Full Discord admin commands
+
+### Security Features
+- Argon2 password hashing
+- Brute force protection
+- Session management with IP validation
+- Premium account verification
+- Authentication timeout system
+
+[View complete feature list →](Configuration.md)
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by the Relish Development Team**
+
+[Discord](https://discord.gg/jDr2KZcGXk) • [Documentation](https://im5lb.github.io/relishauth/) • [Download](https://modrinth.com/plugin/relishauth)
+
+</div>
