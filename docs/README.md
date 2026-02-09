@@ -104,12 +104,6 @@ For servers requiring maximum security:
 - **GitHub**: [View on GitHub](https://github.com/iM5LB/relishauth)
 - **Donate**: [Support development](https://creators.sa/m5lb)
 
-## 📝 License
-
-RelishAuth is proprietary software. Premium licenses are sold exclusively through Discord tickets. The source code is not open source and premium code is not shared.
-
-For licensing inquiries, please open a ticket in our [Discord server](https://discord.gg/jDr2KZcGXk).
-
 ---
 
 **Made with ❤️ by the Relish Development Team**
