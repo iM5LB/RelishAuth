@@ -134,7 +134,7 @@ For servers requiring maximum security with hybrid authentication and strict ses
 
 <div align="center">
 
-**Made with ❤️ by the Relish Development Team**
+**Made with ❤️ by M5LB**
 
 [Discord](https://discord.gg/jDr2KZcGXk) • [Documentation](https://im5lb.github.io/relishauth/) • [Download](https://modrinth.com/plugin/relishauth)
 
