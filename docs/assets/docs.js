@@ -126,13 +126,9 @@ function matchesSearchQuery(page, query) {
   }
 
   const tokens = q.split(/\s+/).filter(Boolean);
-  const title = page.title.toLowerCase();
-  const file = page.file.toLowerCase();
   const content = searchIndex.get(page.file) || '';
 
-  return tokens.every((token) =>
-    title.includes(token) || file.includes(token) || content.includes(token)
-  );
+  return tokens.every((token) => content.includes(token));
 }
 
 // Sidebar Builder
