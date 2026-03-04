@@ -29,6 +29,7 @@ const themeToggle = el('#theme-toggle');
 const sidebarToggle = el('#sidebar-toggle');
 const sidebar = el('#sidebar');
 const searchIndex = new Map();
+const searchPreviewIndex = new Map();
 let searchIndexPromise = null;
 
 // Theme Management
@@ -73,8 +74,8 @@ function normalizeHash(hash) {
   return entry ? entry.file : 'README.md';
 }
 
-function stripMarkdown(md) {
-  return md
+function stripMarkdown(md, lower = true) {
+  let text = md
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`[^`]*`/g, ' ')
     .replace(/!\[[^\]]*]\([^)]+\)/g, ' ')
@@ -82,8 +83,13 @@ function stripMarkdown(md) {
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/[>*_~\-\[\]\(\)]/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+    .trim();
+
+  if (lower) {
+    text = text.toLowerCase();
+  }
+
+  return text;
 }
 
 async function buildSearchIndex() {
@@ -97,12 +103,15 @@ async function buildSearchIndex() {
         const res = await fetch(page.file + `?search=${Date.now()}`);
         if (!res.ok) {
           searchIndex.set(page.file, '');
+          searchPreviewIndex.set(page.file, '');
           return;
         }
         const md = await res.text();
-        searchIndex.set(page.file, stripMarkdown(md));
+        searchIndex.set(page.file, stripMarkdown(md, true));
+        searchPreviewIndex.set(page.file, stripMarkdown(md, false));
       } catch {
         searchIndex.set(page.file, '');
+        searchPreviewIndex.set(page.file, '');
       }
     })
   );
@@ -131,6 +140,28 @@ function matchesSearchQuery(page, query) {
   return tokens.every((token) => content.includes(token));
 }
 
+function extractSearchSnippet(file, query) {
+  const preview = searchPreviewIndex.get(file) || '';
+  if (!preview) {
+    return '';
+  }
+
+  const lowerPreview = preview.toLowerCase();
+  const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const firstToken = tokens.find((token) => lowerPreview.includes(token));
+  if (!firstToken) {
+    return '';
+  }
+
+  const index = lowerPreview.indexOf(firstToken);
+  const start = Math.max(0, index - 45);
+  const end = Math.min(preview.length, index + 110);
+  const prefix = start > 0 ? '... ' : '';
+  const suffix = end < preview.length ? ' ...' : '';
+
+  return `${prefix}${preview.slice(start, end).trim()}${suffix}`;
+}
+
 // Sidebar Builder
 function buildSidebar(filter = '') {
   const q = filter.trim();
@@ -151,8 +182,8 @@ function buildSidebar(filter = '') {
       }
       currentSection = p.section;
     }
-    
-    html += `<a href="#/${encodeURIComponent(p.file)}" data-file="${p.file}"><span class="nav-icon" aria-hidden="true">${p.icon || '•'}</span><span class="nav-label">${p.title}</span></a>`;
+    const snippet = q ? extractSearchSnippet(p.file, q) : '';
+    html += `<a href="#/${encodeURIComponent(p.file)}" data-file="${p.file}"><span class="nav-icon" aria-hidden="true">${p.icon || '*'}</span><span class="nav-text"><span class="nav-label">${p.title}</span>${snippet ? `<span class="nav-snippet">${escapeHtml(snippet)}</span>` : ''}</span></a>`;
   });
 
   if (q && !hasResults) {

@@ -283,7 +283,7 @@ body {
 
 .nav a {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   padding: 8px 12px;
   margin: 2px 0;
@@ -304,8 +304,22 @@ body {
   line-height: 1;
 }
 
+.nav-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .nav-label {
   min-width: 0;
+  line-height: 1.2;
+}
+
+.nav-snippet {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .nav-empty {
