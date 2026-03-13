@@ -237,7 +237,7 @@ skins:
 
 ### Session Duration
 
-How long players stay logged in:
+How long players can auto-login with valid sessions (without re-authenticating):
 
 ```yaml
 session:
@@ -251,6 +251,8 @@ session:
 - `15m` - 15 minutes
 - `30m` - 30 minutes
 - `1h` - 1 hour (maximum)
+
+**How it works**: After successful authentication, players can rejoin within the session duration without needing to authenticate again. Once the session expires, they must authenticate again.
 
 **Note**: Premium auto-login players bypass session checks entirely.
 

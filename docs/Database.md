@@ -4,9 +4,10 @@ Guide for configuring RelishAuth's database system, including SQLite and MySQL/M
 
 ## Database Options
 
-RelishAuth supports two database types:
+RelishAuth supports multiple database types:
 - **SQLite** - Local file-based database (default, zero configuration)
 - **MySQL/MariaDB** - Network database for multi-server setups
+- **PostgreSQL** - Advanced network database with enterprise features
 
 ## SQLite (Default)
 
@@ -176,6 +177,137 @@ database:
     password: "secure_password_here"
 ```
 
+## PostgreSQL
+
+### Overview
+
+PostgreSQL for advanced database needs:
+- **Enterprise features** - Advanced data types and functions
+- **High performance** - Excellent for large datasets
+- **Multi-server support** - Share data across proxies
+- **ACID compliance** - Reliable transactions
+- **Extensible** - Custom functions and extensions
+
+### Prerequisites
+
+- PostgreSQL 10+ (recommended 12+)
+- Database server accessible from Velocity proxy
+- Database credentials
+
+### Step 1: Install PostgreSQL
+
+**Ubuntu/Debian**:
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+**CentOS/RHEL**:
+```bash
+sudo yum install postgresql-server postgresql-contrib
+sudo postgresql-setup initdb
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+```
+
+**Windows**:
+- Download from [PostgreSQL Downloads](https://www.postgresql.org/download/windows/)
+- Run installer
+- Follow setup wizard
+
+### Step 2: Create Database
+
+Connect to PostgreSQL:
+```bash
+sudo -u postgres psql
+```
+
+Create database and user:
+```sql
+CREATE DATABASE relishauth;
+CREATE USER relishauth WITH ENCRYPTED PASSWORD 'secure_password_here';
+GRANT ALL PRIVILEGES ON DATABASE relishauth TO relishauth;
+\q
+```
+
+**For remote access** (if Velocity is on different server):
+Edit `/etc/postgresql/*/main/postgresql.conf`:
+```
+listen_addresses = '*'
+```
+
+Edit `/etc/postgresql/*/main/pg_hba.conf`:
+```
+host    relishauth    relishauth    0.0.0.0/0    md5
+```
+
+Restart PostgreSQL:
+```bash
+sudo systemctl restart postgresql
+```
+
+### Step 3: Configure RelishAuth
+
+Edit `config.yml`:
+
+```yaml
+database:
+  type: "postgresql"
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "relishauth"
+    username: "relishauth"
+    password: "secure_password_here"
+    use-ssl: false
+```
+
+### Step 4: Configure Connection Pool
+
+```yaml
+database:
+  postgresql:
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+```
+
+### Step 5: Restart and Verify
+
+Restart Velocity proxy and check console:
+```
+[INFO] [RelishAuth] Connecting to PostgreSQL database...
+[INFO] [RelishAuth] Database connection established!
+[INFO] [RelishAuth] Created tables successfully
+```
+
+### Advantages
+
+- ✅ Enterprise-grade reliability
+- ✅ Advanced data types (JSON, arrays, etc.)
+- ✅ Excellent performance with large datasets
+- ✅ Strong ACID compliance
+- ✅ Extensible with custom functions
+- ✅ Multi-server support
+
+### Disadvantages
+
+- ❌ More complex setup than MySQL
+- ❌ Requires PostgreSQL knowledge
+- ❌ Overkill for small servers
+
+### Best For
+
+- Large server networks (1000+ players)
+- Enterprise environments
+- Servers requiring advanced database features
+- High-availability setups
+
 ## Connection Pool Settings
 
 ### HikariCP Configuration
@@ -184,7 +316,15 @@ RelishAuth uses HikariCP for connection pooling:
 
 ```yaml
 database:
-  mysql:
+  mysql:  # For MySQL/MariaDB
+    pool:
+      maximum-pool-size: 10      # Max connections
+      minimum-idle: 5            # Min idle connections
+      connection-timeout: 30000  # Connection timeout (ms)
+      idle-timeout: 600000       # Idle timeout (ms)
+      max-lifetime: 1800000      # Max connection lifetime (ms)
+
+  postgresql:  # For PostgreSQL
     pool:
       maximum-pool-size: 10      # Max connections
       minimum-idle: 5            # Min idle connections
@@ -227,9 +367,17 @@ pool:
 
 ### Enable SSL
 
+**For MySQL/MariaDB**:
 ```yaml
 database:
   mysql:
+    use-ssl: true
+```
+
+**For PostgreSQL**:
+```yaml
+database:
+  postgresql:
     use-ssl: true
 ```
 

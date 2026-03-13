@@ -128,12 +128,14 @@ security:
 
 ### Session Duration
 
-Control how long players stay authenticated:
+Control how long players can auto-login with valid sessions (without re-authenticating):
 
 ```yaml
 session:
   duration: "5m"  # Options: 0, 1m, 5m, 15m, 30m, 1h
 ```
+
+**How it works**: After successful authentication, players maintain a valid session for the specified duration. During this time, they can rejoin without needing to authenticate again. Once expired, they must authenticate again.
 
 **Security vs Convenience**:
 

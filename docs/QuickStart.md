@@ -57,11 +57,13 @@ discord:
 
 ### Set Session Duration
 
-Choose how long players stay logged in:
+Configure how long players stay authenticated with valid sessions (auto-login duration):
 ```yaml
 session:
   duration: "5m"  # Options: 0, 1m, 5m, 15m, 30m, 1h
 ```
+
+**Note**: This determines how long a player can rejoin without re-authenticating. After this time expires, they'll need to authenticate again.
 
 ## Step 5: Reload Configuration
 

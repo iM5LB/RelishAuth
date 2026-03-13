@@ -39,6 +39,7 @@
 ### 💾 **Flexible Database Support**
 - **SQLite**: Zero-configuration local database (default)
 - **MySQL/MariaDB**: Network database support for multi-server setups
+- **PostgreSQL**: Enterprise-grade database with advanced features
 - **Connection Pooling**: High-performance HikariCP integration
 
 ---
@@ -110,7 +111,7 @@ session:
 
 # Database setup
 database:
-  type: "sqlite"  # Options: sqlite, mysql, mariadb
+  type: "sqlite"  # Options: sqlite, mysql, mariadb, postgresql
   sqlite:
     path: "data.db"
 ```
