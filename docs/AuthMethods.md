@@ -187,7 +187,7 @@ You can now join the server anytime.
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-offline: false  # Security: prevent impersonation
+  allow-premium-username-impersonation: false  # Security: prevent impersonation
 
 security:
   premium:
@@ -219,15 +219,27 @@ Please authenticate to continue.
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-offline: false  # Prevents impersonation
+  allow-premium-username-impersonation: false  # Prevents impersonation
 ```
 
 **Unsafe Configuration** (Not Recommended):
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-offline: true  # ⚠️ Allows impersonation!
+  allow-premium-username-impersonation: true  # ⚠️ Allows impersonation!
 ```
+
+### Backend UUIDs (Optional)
+
+If you run an offline-mode proxy but want backend Paper servers to see Mojang UUIDs for premium players:
+
+```yaml
+authentication:
+  premium-use-official-uuid: true
+  premium-use-official-uuid-migrate-database: true
+```
+
+**Important**: This changes player identity on the backend (inventories/claims/permissions may not match old offline UUID data).
 
 ### Best For
 

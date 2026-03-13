@@ -295,20 +295,20 @@ Run these commands to verify functionality:
    [INFO] [RelishAuth] Added new config keys: ...
    ```
 
-### Auto-Update Feature
+### Config Migration & Update Checks
 
-RelishAuth includes an auto-update system for configuration:
+RelishAuth automatically keeps your config up to date:
+- On startup and `/ra reload`, missing config keys are merged from the bundled `config.yml`
+- A timestamped backup is created before any changes are written
+- If your `config.yml` is invalid YAML, defaults are restored (backup first)
+
+Optional plugin update notifications:
 
 ```yaml
-auto-update:
-  enabled: true
-  check-on-startup: true
+check-for-updates: true
 ```
 
-This automatically:
-- Adds new configuration keys
-- Preserves your existing settings
-- Creates backups before updating
+When enabled, RelishAuth checks GitHub releases and logs a message if a newer version is available (download link points to Modrinth).
 
 ## Next Steps
 

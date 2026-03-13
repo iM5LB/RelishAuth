@@ -32,20 +32,24 @@ When enabled, RelishAuth will log:
 - Discord API calls
 - Session management events
 
-### Auto-Update
+### Update Checking
 
-Automatically update configuration with new keys:
+Check for plugin updates on startup and `/ra reload`:
 
 ```yaml
-auto-update:
-  enabled: true
-  check-on-startup: true
+check-for-updates: true
 ```
 
-This feature:
-- Adds new configuration keys from updates
-- Preserves your existing settings
-- Creates backups before updating
+When enabled, RelishAuth checks GitHub releases for a newer version and logs an update message.
+The download link points to the Modrinth project page.
+
+### Config Migration (No Config Needed)
+
+RelishAuth automatically merges **missing keys** from the bundled `config.yml` into your existing `plugins/relishauth/config.yml`:
+- Runs on proxy startup and `/ra reload`
+- Preserves your existing values and comments where possible
+- Creates a timestamped backup before writing changes
+- If your YAML is invalid, it restores defaults (backup first)
 
 ### Admin Players
 
@@ -98,16 +102,32 @@ When enabled:
 
 **Security Note**: Premium players bypass ALL authentication checks and session management.
 
-### Premium Offline Mode
+### Premium Username Impersonation (Unsafe)
 
-Allow premium usernames in offline/cracked mode:
+Allow cracked/offline clients to join using a username that belongs to a premium account:
 
 ```yaml
 authentication:
-  allow-premium-offline: false  # Keep false for security
+  allow-premium-username-impersonation: false  # Keep false for security
 ```
 
-**⚠️ Security Warning**: Enabling this allows anyone to impersonate premium accounts. Only enable if you understand the risks.
+**⚠️ Security Warning**: Enabling this can allow impersonation of premium accounts unless you add extra authentication checks.
+
+### Premium Official UUID Injection (Backend UUIDs)
+
+If you run an offline-mode proxy but want backend Paper servers to see Mojang UUIDs for premium players:
+
+```yaml
+authentication:
+  premium-use-official-uuid: false
+  premium-use-official-uuid-migrate-database: true
+```
+
+When enabled, RelishAuth injects the Mojang UUID into the player's login GameProfile so forwarded UUIDs on the backend are "official".
+
+**Important**:
+- This changes player identity on the backend (inventories/claims/permissions may not match old offline UUID data)
+- Keep `allow-premium-username-impersonation: false` unless you fully understand the security implications
 
 ### Bedrock Players
 
@@ -174,6 +194,44 @@ authentication:
 - Higher values = more secure, but slower
 - Lower values = faster, but less secure
 - Default values provide good balance
+
+## Skin Restoring (Skins & Capes)
+
+RelishAuth can inject a `textures` property into the player's **login GameProfile** so backend Paper servers receive the correct skin on offline-mode proxies.
+
+```yaml
+skins:
+  enabled: true
+
+  # Keep textures if another plugin already provides them (recommended for Bedrock/Geyser).
+  preserve-existing-textures: true
+
+  # Cape options (mainly for offline/cracked mode)
+  capes:
+    # Inject this cape into UNSIGNED textures payloads when the provider doesn't include a cape.
+    # Value can be either:
+    # - Full URL (http(s)://...)
+    # - A textures.minecraft.net texture hash (64 hex chars)
+    default-unsigned-cape: ""
+
+  cache-duration: 604800  # 7 days
+
+  api:
+    username-textures-endpoint: ""     # Default: https://skinsystem.ely.by/textures/{nickname}
+    username-uuid-lookup-endpoint: ""  # Default: https://api.minecraftservices.com/minecraft/profile/lookup/name/{nickname}
+    uuid-session-endpoint: ""          # Default: https://sessionserver.mojang.com/session/minecraft/profile/{uuid}?unsigned=false
+
+    timeout: 10
+    login-wait-timeout: 3
+
+    retry-attempts: 2
+    retry-delay: 1000
+```
+
+**Notes**:
+- **Premium** players: UUID lookup + Mojang session returns signed textures (skin + cape when available).
+- **Cracked/offline** players: username textures endpoint is used as a best-effort source (often skin only).
+- Capes in offline mode are not guaranteed; `default-unsigned-cape` can be used as a fallback.
 
 ## Session Management
 
@@ -420,7 +478,7 @@ Set to `false` to disable specific commands.
 authentication:
   method: "password"
   premium-auto-login: false
-  allow-premium-offline: false
+  allow-premium-username-impersonation: false
   password:
     min-length: 8
     require-uppercase: true

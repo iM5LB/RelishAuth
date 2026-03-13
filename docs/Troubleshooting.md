@@ -122,7 +122,7 @@ Common issues and solutions for RelishAuth. If you don't find your issue here, j
    ```yaml
    authentication:
      premium-auto-login: true
-     allow-premium-offline: false
+     allow-premium-username-impersonation: false
    ```
 
 2. **Check Mojang API access**:
@@ -135,6 +135,19 @@ Common issues and solutions for RelishAuth. If you don't find your issue here, j
      premium:
        verification-timeout: 10  # Increase if slow
    ```
+
+### LuckPerms UUID Mismatch Warning
+
+**Symptoms**: LuckPerms warns that a player already has data stored under a different UUID.
+
+**Common causes**:
+- Switching between offline UUIDs and Mojang UUIDs (for example, enabling `authentication.premium-use-official-uuid`)
+- Inconsistent Velocity forwarding / authentication setup across backend servers
+
+**Solutions**:
+1. Keep `authentication.premium-use-official-uuid` consistent across your network.
+2. If enabling it on an existing server, keep `authentication.premium-use-official-uuid-migrate-database: true` and be prepared to migrate data in other plugins manually if needed.
+3. Verify Velocity forwarding is correctly configured on all backend servers.
 
 ### Authentication Timeout
 

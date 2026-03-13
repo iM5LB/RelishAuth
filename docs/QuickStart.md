@@ -123,7 +123,7 @@ Now that you have basic authentication working, explore these features:
 ### Premium players can't join
 - Ensure `premium-auto-login: true` is set
 - Check Mojang API is accessible from your server
-- Verify `allow-premium-offline: false` for security
+- Verify `allow-premium-username-impersonation: false` for security
 
 ## Need Help?
 

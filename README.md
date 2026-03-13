@@ -163,7 +163,7 @@ Streamlined experience for premium players:
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-offline: false  # Security: prevent impersonation
+  allow-premium-username-impersonation: false  # Security: prevent impersonation
 ```
 
 **How it works:**

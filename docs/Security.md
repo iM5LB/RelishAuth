@@ -174,15 +174,16 @@ session:
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-offline: false  # IMPORTANT: Keep false!
+  allow-premium-username-impersonation: false  # IMPORTANT: Keep false!
 ```
 
 **Security Configuration**:
 
 **Secure** (Recommended):
 ```yaml
-premium-auto-login: true
-allow-premium-offline: false
+authentication:
+  premium-auto-login: true
+  allow-premium-username-impersonation: false
 ```
 - Premium players auto-login
 - Cracked clients cannot impersonate premium accounts
@@ -190,12 +191,25 @@ allow-premium-offline: false
 
 **Insecure** (Not Recommended):
 ```yaml
-premium-auto-login: true
-allow-premium-offline: true  # ⚠️ DANGEROUS!
+authentication:
+  premium-auto-login: true
+  allow-premium-username-impersonation: true  # ⚠️ DANGEROUS!
 ```
 - Anyone can join as premium username
 - No verification required
 - Allows account impersonation
+
+### Backend UUID Injection (Optional)
+
+If you run an offline-mode proxy but want backend Paper servers to see Mojang UUIDs for premium players:
+
+```yaml
+authentication:
+  premium-use-official-uuid: true
+  premium-use-official-uuid-migrate-database: true
+```
+
+**Important**: This changes player identity on the backend (inventories/claims/permissions may not match old offline UUID data).
 
 ### Premium Verification
 
@@ -288,9 +302,10 @@ Remove IP block:
      require-numbers: true
    ```
 
-2. **Keep `allow-premium-offline: false`**:
+2. **Keep `allow-premium-username-impersonation: false`**:
    ```yaml
-   allow-premium-offline: false
+   authentication:
+     allow-premium-username-impersonation: false
    ```
 
 3. **Enable rate limiting**:
@@ -385,8 +400,9 @@ Remove IP block:
 
 3. **Enable premium auto-login**:
    ```yaml
-   premium-auto-login: true
-   allow-premium-offline: false
+   authentication:
+     premium-auto-login: true
+     allow-premium-username-impersonation: false
    ```
 
 ## Security Monitoring
@@ -472,7 +488,7 @@ Monitor and manage security via Discord:
 
 ### Premium Account Impersonation
 
-1. **Verify `allow-premium-offline: false`**
+1. **Verify `allow-premium-username-impersonation: false`**
 
 2. **Check player is actually premium**:
    ```
@@ -488,7 +504,7 @@ Monitor and manage security via Discord:
 
 Before going live, verify:
 
-- [ ] `allow-premium-offline: false`
+- [ ] `allow-premium-username-impersonation: false`
 - [ ] Strong password policy configured
 - [ ] Rate limiting enabled
 - [ ] Session duration appropriate for your server
