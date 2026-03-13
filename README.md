@@ -283,6 +283,6 @@ customization:
 
 <div align="center">
 
-**Made with ❤️ by the Relish Development Team**
+**Made with ❤️ by M5LB**
 
 </div>
