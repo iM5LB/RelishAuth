@@ -41,7 +41,7 @@ RelishAuth requires LimboAPI to function. Download it from:
    ```
    velocity-proxy/
    └── plugins/
-       ├── RelishAuth-1.0.0.jar
+       ├── RelishAuth-1.0.3.jar
        └── LimboAPI-1.x.x.jar
    ```
 
@@ -60,7 +60,7 @@ RelishAuth requires LimboAPI to function. Download it from:
 
 2. **Wait for plugins to load**. You should see in console:
    ```
-   [INFO] [RelishAuth] Loading RelishAuth v1.0.0
+   [INFO] [RelishAuth] Loading RelishAuth v1.0.3
    [INFO] [RelishAuth] Generating default configuration...
    [INFO] [RelishAuth] RelishAuth has been enabled!
    ```

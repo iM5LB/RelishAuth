@@ -2,7 +2,19 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
-## [1.0.2] - 2025-03-13
+## [1.0.3] - 2026-03-17
+
+### Added
+- Post-auth routing config (`routing.post-auth-server`) with default fallback to Velocity's `attempt-connection-order`.
+- Versioned config updates via `config-version` (config updater now bumps the schema version when syncing defaults).
+
+### Changed
+- Session duration presets are now fully driven by `session.available-durations` for both:
+  - In-game `/ra session` menu
+  - Discord `/session` buttons + validation
+- Session duration parsing now supports arbitrary `Ns/Nm/Nh/Nd` durations consistently across the proxy.
+
+## [1.0.2] - 2026-03-13
 
 ### Added
 - Skin restore improvements:

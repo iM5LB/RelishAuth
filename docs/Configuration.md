@@ -43,6 +43,28 @@ check-for-updates: true
 When enabled, RelishAuth checks GitHub releases for a newer version and logs an update message.
 The download link points to the Modrinth project page.
 
+### Config Version (Internal)
+
+RelishAuth uses a schema version to know when it should sync new default keys into your config:
+
+```yaml
+config-version: 2
+```
+
+You normally shouldn't change this manually.
+
+### Post-Auth Routing
+
+Control which backend server players are sent to **after** successful authentication/auto-login:
+
+```yaml
+routing:
+  # Must match a server name in velocity.toml ([servers])
+  post-auth-server: "lobby"
+```
+
+If empty, RelishAuth falls back to Velocity's `attempt-connection-order` and picks the first non `limbo`/`auth` entry.
+
 ### Config Migration (No Config Needed)
 
 RelishAuth automatically merges **missing keys** from the bundled `config.yml` into your existing `plugins/relishauth/config.yml`:
@@ -277,7 +299,7 @@ When `true`:
 
 ### Available Durations
 
-Durations players can choose with `/ra session`:
+Durations players can choose with `/ra session` and Discord `/session` buttons:
 
 ```yaml
 session:
@@ -288,6 +310,8 @@ session:
     - "15m"
     - "30m"
     - "1h"
+
+You can add more presets using `s`, `m`, `h`, or `d` (for example `30s`, `2h`, `1d`).
 ```
 
 ## Security Settings
@@ -327,7 +351,7 @@ After max attempts, player is locked out for the specified duration.
 
 ### Premium Verification
 
-Configure Mojang API verification:
+Configure premium verification timeouts:
 
 ```yaml
 security:
@@ -335,8 +359,9 @@ security:
     verification-timeout: 5
     api-connect-timeout: 5000  # Milliseconds
     api-read-timeout: 5000     # Milliseconds
-    api-url: "https://api.mojang.com/users/profiles/minecraft/"
 ```
+
+The UUID lookup endpoint itself is configured under `skins.api.username-uuid-lookup-endpoint`.
 
 [Learn more about security settings →](Security.md)
 
