@@ -224,7 +224,10 @@ customization:
 | `/ra info <player>` | View player information | `/ra info PlayerName` |
 | `/ra unlink <player>` | Unlink player's Discord | `/ra unlink PlayerName` |
 | `/ra block <username> <ip>` | Block username from IP | `/ra block Griefer 192.168.1.1` |
-| `/ra unblock <identifier>` | Unblock username/IP | `/ra unblock Griefer` |
+| `/ra unblock <username> <from>` | Unblock username from IP | `/ra unblock Griefer 192.168.1.1` |
+| `/ra clearblocks <username>` | Clear all stored blocks for username | `/ra clearblocks Griefer` |
+| `/ra setpassword <player> <new> <confirm>` | Admin set a player's password | `/ra setpassword PlayerName NewPass NewPass` |
+| `/ra resetpassword <player> [length]` | Admin reset password (temp password) | `/ra resetpassword PlayerName 16` |
 ---
 
 ## 🤖 Discord Bot Integration
@@ -267,7 +270,10 @@ customization:
 | `/kick <player>` | Kick player from server | Admin |
 | `/unlink <player>` | Unlink player's account | Admin |
 | `/block <username> <ip>` | Block username from IP | Admin |
-| `/unblock <identifier>` | Unblock username/IP | Admin |
+| `/unblock <username> <from>` | Unblock username from IP | Admin |
+| `/clearblocks <username>` | Clear all stored blocks for username | Admin |
+| `/setpassword <player> <new> <confirm>` | Admin set a player's password | Admin |
+| `/resetpassword <player> [length]` | Admin reset password (temp password) | Admin |
 | `/reload` | Reload plugin configuration | Admin |
 
 ---
