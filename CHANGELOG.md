@@ -2,7 +2,7 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
-## [Unreleased]
+## [1.0.4] - 2026-03-30
 
 ### Added
 - Language file updater: automatically merges missing keys into `lang/<lang>/plugin.yml` and `lang/<lang>/discord.yml` on startup and `/ra reload` to prevent "Missing message key" spam.
