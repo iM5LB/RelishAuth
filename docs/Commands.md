@@ -178,9 +178,11 @@ Unlink another player's Discord account.
 
 ### `/ra block <username> <ip>`
 
-Block a username from connecting from a specific IP.
+Block an IP from joining with a specific username.
 
-**Usage**: `/ra block Username 192.168.1.1`
+**Usage**: `/ra block <username> <from>`
+
+`<from>` can be an IP address or a player name (RelishAuth will resolve their IP).
 
 **Permission**: `relishauth.admin`
 
@@ -197,9 +199,11 @@ Block a username from connecting from a specific IP.
 
 ### `/ra unblock <identifier>`
 
-Unblock a username or IP address.
+Unblock an IP for a specific username.
 
-**Usage**: `/ra unblock Username` or `/ra unblock 192.168.1.1`
+**Usage**: `/ra unblock <username> <from>`
+
+`<from>` can be an IP address or a player name (RelishAuth will resolve their IP).
 
 **Permission**: `relishauth.admin`
 
@@ -208,6 +212,30 @@ Unblock a username or IP address.
 /ra unblock Notch
 /ra unblock 192.168.1.100
 ```
+
+### `/ra clearblocks <username>`
+
+Clear all stored IP blocks for a username.
+
+**Usage**: `/ra clearblocks PlayerName`
+
+**Permission**: `relishauth.admin`
+
+### `/ra setpassword <player> <new> <confirm>`
+
+Admin command to set a player's password.
+
+**Usage**: `/ra setpassword PlayerName NewPass NewPass`
+
+**Permission**: `relishauth.admin`
+
+### `/ra resetpassword <player> [length]`
+
+Admin command to reset a player's password by generating a temporary password.
+
+**Usage**: `/ra resetpassword PlayerName` or `/ra resetpassword PlayerName 16`
+
+**Permission**: `relishauth.admin`
 
 ## Discord Slash Commands
 
@@ -279,17 +307,41 @@ Unlink a player's Discord account.
 
 ### `/block <username> <ip>`
 
-Block a username from an IP address.
+Block an IP from joining with a specific username.
 
-**Usage**: `/block username:Notch ip:192.168.1.1`
+**Usage**: `/block username:Notch from:192.168.1.1` or `/block username:Notch from:PlayerName`
 
 **Permission**: Admin role
 
 ### `/unblock <identifier>`
 
-Unblock a username or IP.
+Unblock an IP for a specific username.
 
-**Usage**: `/unblock identifier:Notch`
+**Usage**: `/unblock username:Notch from:192.168.1.1` or `/unblock username:Notch from:PlayerName`
+
+**Permission**: Admin role
+
+### `/clearblocks <username>`
+
+Clear all stored IP blocks for a username.
+
+**Usage**: `/clearblocks username:Notch`
+
+**Permission**: Admin role
+
+### `/resetpassword <username>`
+
+Reset a player's password (generates a temporary password and shows it to the admin).
+
+**Usage**: `/resetpassword username:Notch`
+
+**Permission**: Admin role
+
+### `/setpassword <username>`
+
+Set a player's password (opens a modal to enter the new password).
+
+**Usage**: `/setpassword username:Notch`
 
 **Permission**: Admin role
 
@@ -320,6 +372,8 @@ relishauth.command.info        # /ra info
 relishauth.command.reload      # /ra reload
 relishauth.command.block       # /ra block
 relishauth.command.unblock     # /ra unblock
+relishauth.command.setpassword # /ra setpassword
+relishauth.command.resetpassword # /ra resetpassword
 ```
 
 ### LuckPerms Setup
