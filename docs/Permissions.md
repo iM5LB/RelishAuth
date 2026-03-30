@@ -4,6 +4,13 @@ Complete reference for RelishAuth permission nodes and setup with popular permis
 
 ## Permission Nodes
 
+**Important note (Velocity):** Permission “defaults” can’t be enforced by the proxy automatically. In practice, permissions depend on your permission plugin (e.g., LuckPerms-Velocity).
+
+**Current enforcement in RelishAuth:**
+- **Admin commands** are checked using `relishauth.admin` (or the fallback `admin-players` list).
+- **Legacy compatibility:** older builds used `relishAuth.admin` / `relishAuth.*` (wrong casing). RelishAuth still accepts these, but you should migrate to the lowercase nodes.
+- Per-command nodes listed below are documented for consistency, but may not be enforced on every command in every build.
+
 ### Player Permissions
 
 | Permission | Description | Default |
@@ -27,6 +34,9 @@ Complete reference for RelishAuth permission nodes and setup with popular permis
 | `relishauth.command.unlink.others` | Unlink other players | op |
 | `relishauth.command.block` | Use `/ra block` command | op |
 | `relishauth.command.unblock` | Use `/ra unblock` command | op |
+| `relishauth.command.clearblocks` | Use `/ra clearblocks` command | op |
+| `relishauth.command.setpassword` | Use `/ra setpassword` command | op |
+| `relishauth.command.resetpassword` | Use `/ra resetpassword` command | op |
 
 ### Special Permissions
 

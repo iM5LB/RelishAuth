@@ -197,7 +197,7 @@ Block an IP from joining with a specific username.
 /ra block Griefer 10.0.0.50
 ```
 
-### `/ra unblock <identifier>`
+### `/ra unblock <username> <from>`
 
 Unblock an IP for a specific username.
 
@@ -209,8 +209,8 @@ Unblock an IP for a specific username.
 
 **Examples**:
 ```
-/ra unblock Notch
-/ra unblock 192.168.1.100
+/ra unblock Notch 192.168.1.100
+/ra unblock Notch Griefer
 ```
 
 ### `/ra clearblocks <username>`
