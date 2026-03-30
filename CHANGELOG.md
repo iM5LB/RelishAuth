@@ -6,12 +6,16 @@ All notable changes to RelishAuth will be documented in this file.
 
 ### Added
 - Language file updater: automatically merges missing keys into `lang/<lang>/plugin.yml` and `lang/<lang>/discord.yml` on startup and `/ra reload` to prevent "Missing message key" spam.
+- New admin commands:
+  - `/ra setpassword <player> <new> <confirm>`
+  - `/ra resetpassword <player> [length]`
+  - `/ra block <username> <from>` / `/ra unblock <username> <from>` / `/ra clearblocks <username>`
 
 ### Changed
 - In-game admin command outputs now use translatable language keys (EN/AR) for `/ra block|unblock|clearblocks`, `/ra setpassword`, `/ra resetpassword`.
 
 ### Fixed
-- Admin permission node casing mismatch (`relishAuth.admin` -> `relishauth.admin`) with legacy compatibility retained.
+- Admin permission node casing mismatch
 
 ## [1.0.3] - 2026-03-17
 
