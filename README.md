@@ -208,23 +208,23 @@ customization:
 
 | Command | Description | Usage |
 |---------|-------------|-------|
-| `/ro password <pass> <confirm>` | Set/change password | `/ro password mypass123 mypass123` |
-| `/ro discord <username>` | Link Discord account | `/ro discord john_doe` |
-| `/ro logout` | Clear all sessions | `/ro logout` |
-| `/ro session [duration]` | Set session duration | `/ro session 30m` |
-| `/ro notify <on/off>` | Toggle join notifications | `/ro notify on` |
-| `/ro unlink` | Unlink Discord account | `/ro unlink` |
-| `/ro info` | View account information | `/ro info` |
+| `/ra password <pass> <confirm>` | Set/change password | `/ra password mypass123 mypass123` |
+| `/ra discord <username>` | Link Discord account | `/ra discord john_doe` |
+| `/ra logout` | Clear all sessions | `/ra logout` |
+| `/ra session [duration]` | Set session duration | `/ra session 30m` |
+| `/ra notify <on/off>` | Toggle join notifications | `/ra notify on` |
+| `/ra unlink` | Unlink Discord account | `/ra unlink` |
+| `/ra info` | View account information | `/ra info` |
 
 ### Admin Commands
 
 | Command | Description | Usage |
 |---------|-------------|-------|
-| `/ro reload` | Reload configuration | `/ro reload` |
-| `/ro info <player>` | View player information | `/ro info PlayerName` |
-| `/ro unlink <player>` | Unlink player's Discord | `/ro unlink PlayerName` |
-| `/ro block <username> <ip>` | Block username from IP | `/ro block Griefer 192.168.1.1` |
-| `/ro unblock <identifier>` | Unblock username/IP | `/ro unblock Griefer` |
+| `/ra reload` | Reload configuration | `/ra reload` |
+| `/ra info <player>` | View player information | `/ra info PlayerName` |
+| `/ra unlink <player>` | Unlink player's Discord | `/ra unlink PlayerName` |
+| `/ra block <username> <ip>` | Block username from IP | `/ra block Griefer 192.168.1.1` |
+| `/ra unblock <identifier>` | Unblock username/IP | `/ra unblock Griefer` |
 ---
 
 ## 🤖 Discord Bot Integration
