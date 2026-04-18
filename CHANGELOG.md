@@ -2,6 +2,34 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.0.5] - 2026-04-13
+
+### Added
+- `bcrypt2y` password hashing support.
+- Limbo auth timeout HUD support:
+  - boss bar toggle, color, and overlay
+
+### Changed
+- Updated RelishAuth for newer LimboAPI behavior:
+  - adjusted limbo session flow for current LimboAPI releases
+  - hardened limbo attach/auth handling
+  - kept the auth world behavior stable with a fixed End auth world and spectator flow
+- Simplified limbo/world customization:
+  - removed configurable limbo world layout/dimension/gamemode tuning
+  - removed configurable limbo movement blocking
+  - movement restriction is now handled internally for stability
+- Simplified title timing by hardcoding fade/stay/fade values instead of exposing them in config.
+- Improved verification logging and debug output:
+  - neutral verification tags such as `[ACCOUNT-VERIFY]` and `[PROFILE-LOOKUP]`
+  - clearer auth decision logs
+  - less confusing premium wording on offline/cracked paths
+
+### Fixed
+- Cached offline/non-premium verification results so cracked players do not hit missing-verification decisions after verification already completed.
+- Fixed new config generation after limbo HUD/config changes.
+- Fixed missing language keys for new help/admin command entries.
+- Fixed limbo session UI/message flow on current LimboAPI builds.
+
 ## [1.0.4] - 2026-03-30
 
 ### Added
