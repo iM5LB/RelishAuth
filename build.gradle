@@ -1,0 +1,348 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.8'
+    id("xyz.jpenilla.run-velocity") version "2.3.1"
+    id 'io.github.goooler.shadow' version '8.1.8'
+}
+
+group = 'relish'
+version = '1.0.5'
+
+repositories {
+    mavenCentral()
+    maven {
+        url = file('.gradle/local-repo')
+    }
+    maven {
+        name = "papermc-repo"
+        url = "https://repo.papermc.io/repository/maven-public/"
+    }
+}
+
+dependencies {
+    compileOnly("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+    annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
+    
+    // JSON parsing (used by PremiumVerificationService)
+    implementation("com.google.code.gson:gson:2.10.1")
+    
+    // LimboAPI (auth limbo world)
+    compileOnly("net.elytrium.limboapi:api:1.1.27-SNAPSHOT")
+    
+    // Discord bot (JDA)
+    implementation("net.dv8tion:JDA:5.1.2") {
+        exclude module: 'opus-java'
+        // RelishAuth uses Discord for DMs + slash commands only (no voice).
+        // Exclude the heavy voice-encryption dependency to reduce jar size.
+        exclude group: "com.google.crypto.tink", module: "tink"
+    }
+    
+    // Note: JDA dependencies are brought transitively and shaded into the final jar.
+    
+    // Password hashing (Argon2 - pure Java)
+    implementation("com.password4j:password4j:1.8.1")
+    
+    // Database connection pooling
+    implementation("com.zaxxer:HikariCP:5.1.0")
+    
+    // Database drivers
+    implementation("org.xerial:sqlite-jdbc:3.47.1.0")        // SQLite (default)
+    implementation("com.mysql:mysql-connector-j:9.1.0")      // MySQL/MariaDB
+    implementation("org.postgresql:postgresql:42.7.3")       // PostgreSQL
+    
+    // YAML config parsing
+    implementation("org.yaml:snakeyaml:2.3")
+}
+
+configurations {
+    // A smaller runtime classpath used by the optional slim jar distribution.
+    // This excludes heavy/optional features (Discord + extra DB drivers).
+    slimRuntimeClasspath {
+        extendsFrom(runtimeClasspath)
+    }
+
+    // Core distribution: keep database drivers, exclude Discord (JDA) to reduce jar size.
+    noDiscordRuntimeClasspath {
+        extendsFrom(runtimeClasspath)
+    }
+}
+
+configurations.slimRuntimeClasspath {
+    // Optional Discord feature (JDA + explicit dependencies)
+    exclude group: "net.dv8tion", module: "JDA"
+    exclude group: "com.neovisionaries", module: "nv-websocket-client"
+    exclude group: "com.squareup.okhttp3", module: "okhttp"
+    exclude group: "org.apache.commons", module: "commons-collections4"
+
+    // Optional database drivers (keep SQLite by default)
+    exclude group: "com.mysql", module: "mysql-connector-j"
+    exclude group: "org.postgresql", module: "postgresql"
+}
+
+configurations.noDiscordRuntimeClasspath {
+    // Optional Discord feature (JDA + transitive dependencies)
+    exclude group: "net.dv8tion", module: "JDA"
+    exclude group: "com.neovisionaries", module: "nv-websocket-client"
+    exclude group: "com.squareup.okhttp3", module: "okhttp"
+    exclude group: "com.squareup.okio", module: "okio"
+    exclude group: "com.squareup.okio", module: "okio-jvm"
+    exclude group: "org.jetbrains.kotlin"
+    exclude group: "com.fasterxml.jackson.core"
+    exclude group: "com.fasterxml.jackson"
+    exclude group: "net.sf.trove4j", module: "core"
+    exclude group: "com.google.crypto.tink", module: "tink"
+    exclude group: "org.apache.commons", module: "commons-collections4"
+}
+
+tasks {
+    runVelocity {
+        // Configure the Velocity version for our task.
+        // This is the only required configuration besides applying the plugin.
+        // Your plugin's jar (or shadowJar if present) will be used automatically.
+        velocityVersion("3.4.0-SNAPSHOT")
+    }
+    
+    shadowJar {
+        archiveClassifier.set('')
+        
+        // Minimize jar size by excluding unused natives
+        
+        // Exclude SQLite natives for unsupported platforms
+        exclude 'org/sqlite/native/Mac/**'
+        exclude 'org/sqlite/native/Windows/x86/**'
+        exclude 'org/sqlite/native/Windows/aarch64/**'
+        exclude 'org/sqlite/native/Windows/armv7/**'
+        exclude 'org/sqlite/native/Linux/arm/**'
+        exclude 'org/sqlite/native/Linux/armv6/**'
+        exclude 'org/sqlite/native/Linux/armv7/**'
+        exclude 'org/sqlite/native/Linux/aarch64/**'
+        exclude 'org/sqlite/native/Linux/riscv64/**'
+        exclude 'org/sqlite/native/Linux/ppc64/**'
+        exclude 'org/sqlite/native/Linux/x86/**'
+        exclude 'org/sqlite/native/Linux-Android/**'
+        exclude 'org/sqlite/native/Linux-Musl/**'
+        exclude 'org/sqlite/native/FreeBSD/**'
+        
+        // Exclude tomp2p (not used)
+        exclude 'tomp2p/**'
+        
+        // Exclude metadata files
+        exclude 'META-INF/maven/**'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        
+        // Relocate dependencies to avoid conflicts
+        // NOTE: JDA and its dependencies are NOT relocated to avoid class loading issues
+        // NOTE: HikariCP is NOT relocated to avoid reflection issues with AtomicFieldUpdater
+        
+        relocate 'com.google.gson', 'relish.libs.gson'
+        relocate 'com.password4j', 'relish.libs.password4j'
+        // Do NOT relocate JDA dependencies:
+        // relocate 'com.neovisionaries.ws', 'relish.libs.ws'
+        // relocate 'com.fasterxml.jackson', 'relish.libs.jackson'
+        // relocate 'gnu.trove', 'relish.libs.trove'
+        // relocate 'okhttp3', 'relish.libs.okhttp3'
+        // relocate 'okio', 'relish.libs.okio'
+        // relocate 'org.apache.commons', 'relish.libs.commons'
+        // Do NOT relocate HikariCP - it uses reflection for AtomicFieldUpdater
+        // relocate 'com.zaxxer.hikari', 'relish.libs.hikari'
+        relocate 'org.yaml.snakeyaml', 'relish.libs.snakeyaml'
+        
+        mergeServiceFiles()
+    }
+
+    build {
+        dependsOn shadowJar
+        dependsOn "shadowJarSlim"
+        dependsOn "shadowJarNoDiscord"
+    }
+}
+
+tasks.register("shadowJarSlim", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier.set("slim")
+
+    // Use a reduced runtime classpath for a much smaller jar.
+    configurations = [project.configurations.slimRuntimeClasspath]
+
+    // Include plugin classes/resources (Velocity metadata, etc.)
+    from(sourceSets.main.output)
+
+    // Exclude SQLite natives for unsupported platforms
+    exclude "org/sqlite/native/Mac/**"
+    exclude "org/sqlite/native/Windows/x86/**"
+    exclude "org/sqlite/native/Windows/aarch64/**"
+    exclude "org/sqlite/native/Windows/armv7/**"
+    exclude "org/sqlite/native/Linux/arm/**"
+    exclude "org/sqlite/native/Linux/armv6/**"
+    exclude "org/sqlite/native/Linux/armv7/**"
+    exclude "org/sqlite/native/Linux/aarch64/**"
+    exclude "org/sqlite/native/Linux/riscv64/**"
+    exclude "org/sqlite/native/Linux/ppc64/**"
+    exclude "org/sqlite/native/Linux/x86/**"
+    exclude "org/sqlite/native/Linux-Android/**"
+    exclude "org/sqlite/native/Linux-Musl/**"
+    exclude "org/sqlite/native/FreeBSD/**"
+
+    // Exclude tomp2p (not used)
+    exclude "tomp2p/**"
+
+    // Exclude metadata files
+    exclude "META-INF/maven/**"
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+
+    // Exclude Discord implementation classes (Discord is optional and not bundled in the slim jar)
+    exclude "relish/relishAuthVelocity/discord/**"
+
+    // Keep relocations identical to the full jar to avoid runtime conflicts
+    relocate "com.google.gson", "relish.libs.gson"
+    relocate "com.password4j", "relish.libs.password4j"
+    relocate "org.yaml.snakeyaml", "relish.libs.snakeyaml"
+
+    mergeServiceFiles()
+}
+
+tasks.register("shadowJarNoDiscord", com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar) {
+    archiveClassifier.set("core")
+
+    // Keep the full database feature set, exclude Discord (JDA) to reduce jar size.
+    configurations = [project.configurations.noDiscordRuntimeClasspath]
+
+    // Include plugin classes/resources (Velocity metadata, etc.)
+    from(sourceSets.main.output)
+
+    // Exclude SQLite natives for unsupported platforms
+    exclude "org/sqlite/native/Mac/**"
+    exclude "org/sqlite/native/Windows/x86/**"
+    exclude "org/sqlite/native/Windows/aarch64/**"
+    exclude "org/sqlite/native/Windows/armv7/**"
+    exclude "org/sqlite/native/Linux/arm/**"
+    exclude "org/sqlite/native/Linux/armv6/**"
+    exclude "org/sqlite/native/Linux/armv7/**"
+    exclude "org/sqlite/native/Linux/aarch64/**"
+    exclude "org/sqlite/native/Linux/riscv64/**"
+    exclude "org/sqlite/native/Linux/ppc64/**"
+    exclude "org/sqlite/native/Linux/x86/**"
+    exclude "org/sqlite/native/Linux-Android/**"
+    exclude "org/sqlite/native/Linux-Musl/**"
+    exclude "org/sqlite/native/FreeBSD/**"
+
+    // Exclude tomp2p (not used)
+    exclude "tomp2p/**"
+
+    // Exclude metadata files
+    exclude "META-INF/maven/**"
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+
+    // Exclude Discord implementation classes (Discord is not bundled in the core jar)
+    exclude "relish/relishAuthVelocity/discord/**"
+
+    // Keep relocations identical to the full jar to avoid runtime conflicts
+    relocate "com.google.gson", "relish.libs.gson"
+    relocate "com.password4j", "relish.libs.password4j"
+    relocate "org.yaml.snakeyaml", "relish.libs.snakeyaml"
+
+    mergeServiceFiles()
+}
+
+// Allatori obfuscation tasks
+tasks.register('obfuscateSpigotFree', Exec) {
+    dependsOn shadowJar
+    group = 'obfuscation'
+    description = 'Obfuscate jar for SpigotMC free version (compliant with SpigotMC rules)'
+    
+    commandLine 'java', '-jar', "${project.projectDir}/allatori.jar", "${project.projectDir}/allatori-spigot-free.xml"
+    
+    doFirst {
+        if (!file("${project.projectDir}/allatori.jar").exists()) {
+            throw new GradleException("allatori.jar not found. Please ensure Allatori is installed.")
+        }
+    }
+}
+
+tasks.register('obfuscateSpigotMCCompliant', Exec) {
+    dependsOn shadowJar
+    group = 'obfuscation'
+    description = 'Obfuscate jar with strict SpigotMC compliance (alternative to spigot-free)'
+    
+    commandLine 'java', '-jar', "${project.projectDir}/allatori.jar", "${project.projectDir}/allatori-spigotmc-compliant.xml"
+    
+    doFirst {
+        if (!file("${project.projectDir}/allatori.jar").exists()) {
+            throw new GradleException("allatori.jar not found. Please ensure Allatori is installed.")
+        }
+    }
+}
+
+tasks.register('obfuscateBuiltByBitFree', Exec) {
+    dependsOn shadowJar
+    group = 'obfuscation'
+    description = 'Obfuscate jar for BuiltByBit free version'
+    
+    commandLine 'java', '-jar', "${project.projectDir}/allatori.jar", "${project.projectDir}/allatori-builtbybit-free.xml"
+    
+    doFirst {
+        if (!file("${project.projectDir}/allatori.jar").exists()) {
+            throw new GradleException("allatori.jar not found. Please ensure Allatori is installed.")
+        }
+    }
+}
+
+tasks.register('obfuscatePremium', Exec) {
+    dependsOn shadowJar
+    group = 'obfuscation'
+    description = 'Obfuscate jar for premium version'
+    
+    commandLine 'java', '-jar', "${project.projectDir}/allatori.jar", "${project.projectDir}/allatori-premium.xml"
+    
+    doFirst {
+        if (!file("${project.projectDir}/allatori.jar").exists()) {
+            throw new GradleException("allatori.jar not found. Please ensure Allatori is installed.")
+        }
+    }
+}
+
+tasks.register('obfuscate', Exec) {
+    dependsOn shadowJar
+    group = 'obfuscation'
+    description = 'Obfuscate jar with default configuration'
+    
+    commandLine 'java', '-Xms128m', '-Xmx512m', '-jar', "${project.projectDir}/allatori.jar", "${project.projectDir}/allatori.xml"
+    
+    doFirst {
+        if (!file("${project.projectDir}/allatori.jar").exists()) {
+            throw new GradleException("allatori.jar not found. Please ensure Allatori is installed.")
+        }
+    }
+}
+
+def targetJavaVersion = 21
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release.set(targetJavaVersion)
+}
+
+def templateSource = file('src/main/templates')
+def templateDest = layout.buildDirectory.dir('generated/sources/templates')
+def generateTemplates = tasks.register('generateTemplates', Copy) { task ->
+    def props = ['version': project.version]
+    task.inputs.properties props
+
+    task.from templateSource
+    task.into templateDest
+    task.expand props
+}
+
+sourceSets.main.java.srcDir(generateTemplates.map { it.outputs })
+
+project.idea.project.settings.taskTriggers.afterSync generateTemplates
+project.eclipse.synchronizationTasks(generateTemplates)
