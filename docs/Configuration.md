@@ -367,68 +367,20 @@ The UUID lookup endpoint itself is configured under `skins.api.username-uuid-loo
 
 ## Limbo World Customization
 
-### Dimension
+RelishAuth now keeps the limbo auth world hardcoded for stability with recent LimboAPI builds.
 
-Choose the limbo world dimension:
+Current built-in auth world behavior:
+- Dimension: `THE_END`
+- Spawn: `0, 64, 0`
+- Game mode: `SPECTATOR`
+- Small barrier platform under spawn
 
-```yaml
-customization:
-  limbo:
-    dimension: "THE_END"  # Options: OVERWORLD, NETHER, THE_END
-```
-
-**Dimension Characteristics**:
-- `OVERWORLD` - Normal world, bright
-- `NETHER` - Red tint, darker
-- `THE_END` - Dark, void-like (default)
-
-### Spawn Location
-
-Set spawn coordinates:
-
-```yaml
-customization:
-  limbo:
-    spawn:
-      x: 0
-      y: 64
-      z: 0
-```
-
-### Game Mode
-
-Set player game mode in limbo:
-
-```yaml
-customization:
-  limbo:
-    gamemode: "SPECTATOR"  # Options: SURVIVAL, CREATIVE, ADVENTURE, SPECTATOR
-```
-
-**Recommended**: `SPECTATOR` prevents players from interacting with the world.
-
-### World Time
-
-Set time of day:
-
-```yaml
-customization:
-  limbo:
-    world-time: 6000  # 0 = dawn, 6000 = noon, 12000 = dusk, 18000 = midnight
-```
+These world/layout settings are no longer exposed in config.
 
 ### Movement Control
 
-Block player movement in limbo:
-
-```yaml
-customization:
-  limbo:
-    block-movement: true
-    movement-threshold: 0.1  # Sensitivity
-```
-
-When enabled, players cannot move while authenticating.
+Limbo movement restriction is now hardcoded for stability with the current LimboAPI flow.
+Players are kept near the auth spawn automatically, and there is no config toggle for it anymore.
 
 ### Timing
 
@@ -442,9 +394,13 @@ customization:
       discord-prompt-delay: 1000  # Milliseconds
     
     title:
-      fade-in: 500    # Milliseconds
-      stay: 999999    # Milliseconds (very long)
-      fade-out: 500   # Milliseconds
+      enabled: true
+    actionbar:
+      enabled: true
+    bossbar:
+      enabled: true
+      color: "BLUE"
+      overlay: "PROGRESS"
 ```
 
 ### Timeout Monitor
