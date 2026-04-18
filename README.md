@@ -188,19 +188,22 @@ security:
     api-url: "https://api.mojang.com/users/profiles/minecraft/"
 ```
 
-### Limbo World Customization
+### Limbo Authentication UI
 
 ```yaml
 customization:
   limbo:
-    dimension: "THE_END"  # OVERWORLD, NETHER, THE_END
-    gamemode: "SPECTATOR"
-    spawn:
-      x: 0
-      y: 64
-      z: 0
-    block-movement: true
+    title:
+      enabled: true
+    actionbar:
+      enabled: true
+    bossbar:
+      enabled: true
+      color: "BLUE"
+      overlay: "PROGRESS"
 ```
+
+RelishAuth now keeps the auth limbo world behavior hardcoded for stability. Movement clamping and the auth world layout are no longer configurable.
 
 ## 🎮 Commands
 
