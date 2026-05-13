@@ -2,6 +2,14 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.0.6] - 2026-05-13
+
+### Added
+- PostgreSQL database support:
+  - Full PostgreSQL configuration options (host, port, database, credentials)
+  - HikariCP connection pooling support
+  - Config schema customization for PostgreSQL tables
+
 ## [1.0.5] - 2026-04-13
 
 ### Added
