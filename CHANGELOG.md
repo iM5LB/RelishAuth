@@ -2,6 +2,15 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.0.7] - 2026-05-21
+
+### Fixed
+- PostgreSQL: correct column types (`BOOLEAN`, `BIGINT`) with auto-migration on startup for existing installs
+- PostgreSQL: `createSession` using SQLite-only `INSERT OR REPLACE` syntax
+- Config validation incorrectly warning on `postgresql` database type
+- Eliminated all `password4j` `PropertyReader` startup warnings
+- Missing language key `error-auth-failed-generic` in EN and AR
+
 ## [1.0.6] - 2026-05-13
 
 ### Added
