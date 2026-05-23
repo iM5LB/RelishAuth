@@ -2,6 +2,14 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.0.8] - 2026-05-23
+
+### Changed
+- Discord config: `discord.server-id` now accepts either a single guild ID string or a list of guild IDs
+
+### Fixed
+- Forced-host routing: players now leave limbo to the server chosen by Velocity (respects `forced-hosts`) instead of always using `attempt-connection-order`
+
 ## [1.0.7] - 2026-05-21
 
 ### Fixed

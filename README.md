@@ -146,6 +146,10 @@ authentication:
   method: "discord"
 discord:
   bot-token: "YOUR_BOT_TOKEN"
+  # You can set a single guild ID:
+  # server-id: "YOUR_DISCORD_SERVER_ID"
+  # Or multiple guild IDs:
+  # server-id: ["GUILD_ID_1", "GUILD_ID_2"]
   server-id: "YOUR_DISCORD_SERVER_ID"
 ```
 
@@ -235,6 +239,11 @@ RelishAuth now keeps the auth limbo world behavior hardcoded for stability. Move
 
 ## 🤖 Discord Bot Integration
 
+### Forced Hosts (Multi-domain)
+
+If you're using Velocity `forced-hosts` for multiple domains (example: `mc.example.com` -> `survival`, `pvp.example.com` -> `pvp`),
+RelishAuth respects Velocity's chosen initial server after authentication (it will not override forced-host routing).
+
 ### Setup Process
 
 1. **Create Discord Application**
@@ -258,6 +267,10 @@ RelishAuth now keeps the auth limbo world behavior hardcoded for stability. Move
    ```yaml
    discord:
      bot-token: "YOUR_BOT_TOKEN"
+     # You can set a single guild ID:
+     # server-id: "YOUR_DISCORD_SERVER_ID"
+     # Or multiple guild IDs:
+     # server-id: ["GUILD_ID_1", "GUILD_ID_2"]
      server-id: "YOUR_DISCORD_SERVER_ID"
      linked-role-id: "ROLE_ID_FOR_LINKED_USERS"
    ```
