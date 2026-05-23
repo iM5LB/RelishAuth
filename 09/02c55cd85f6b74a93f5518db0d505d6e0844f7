@@ -1,0 +1,22 @@
+README.md
+  s_92aff08e1ff8fa::t_d1dfb98e7d7b68 149-152,246,270-273
+  s_92aff08e1ff8fa::t_8bac011aac4bec 242-245
+CHANGELOG.md
+  s_92aff08e1ff8fa::t_5c67aced126b77 5-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "0902c55cd85f6b74a93f5518db0d505d6e0844f7",
+  "prompts": {},
+  "sessions": {
+    "s_92aff08e1ff8fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e16e6-2cc9-7100-abff-c94e617e7b29",
+        "model": "gpt-5.2"
+      },
+      "human_author": "iM5LB <14554378@uofn.edu.om>"
+    }
+  }
+}
