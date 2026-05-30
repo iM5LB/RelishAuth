@@ -2,6 +2,11 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.0.9] - 2026-05-30
+
+### Fixed
+- Forced-host routing for already-authenticated/session-valid players now respects Velocity's selected initial server when `routing.post-auth-server` is empty.
+
 ## [1.0.8] - 2026-05-23
 
 ### Changed
