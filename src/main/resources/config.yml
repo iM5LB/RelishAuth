@@ -1,0 +1,419 @@
+# ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+# ┃           RelishAuth v1.1.0                     ┃
+# ┃     Secure Authentication for Velocity Servers      ┃
+# ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+# ════════════════════════════════════════════════════════
+#  CORE SETTINGS
+# ════════════════════════════════════════════════════════
+
+# Language for plugin messages
+# Available: en (English), ar (Arabic)
+# NOTE: Server name and display settings are in lang/{language}/ files
+language: "en"
+
+# Enable debug logging
+debug: false
+
+# Config schema version (internal)
+# Used for automatic config updates/migrations when new keys are added.
+config-version: 4
+
+# Update checking - Automatically check for plugin updates
+check-for-updates: true
+
+# Admin players (fallback if no permission system is configured)
+# Add Minecraft usernames here to grant admin access
+# Example: ["PlayerName", "AnotherAdmin"]
+admin-players: []
+
+# Routing settings
+routing:
+  # Backend server to send players to AFTER successful authentication/auto-login.
+  # Must match a server name in your Velocity `velocity.toml` under `[servers]`.
+  #
+  # If empty, RelishAuth will use Velocity's `attempt-connection-order` and pick the
+  # first server that is not `limbo`/`auth`.
+  post-auth-server: ""
+
+# Sync Discord roles to Minecraft permission groups using LuckPerms.
+# Requires LuckPerms on the Velocity proxy.
+group-sync:
+  enabled: false
+
+  # Minecraft group name -> Discord role ID
+  # Example:
+  # role-to-group:
+  #   vip: "123456789012345678"
+  #   staff: "234567890123456789"
+  role-to-group: {}
+
+  # If true, mapped LuckPerms groups are removed when the linked Discord user
+  # no longer has the mapped role.
+  remove-groups-when-role-missing: true
+
+# ════════════════════════════════════════════════════════
+#  DATABASE
+# ════════════════════════════════════════════════════════
+
+database:
+  # Type: sqlite, mysql, mariadb, postgresql
+  type: "sqlite"
+
+  # SQLite settings (simple, no setup needed)
+  sqlite:
+    path: "data.db"
+
+  # MySQL/MariaDB settings (for network servers)
+  mysql:
+    host: "localhost"
+    port: 3306
+    database: "relishauth"
+    username: "root"
+    password: "password"
+    use-ssl: false
+    
+    # Connection Pool Settings (HikariCP)
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # PostgreSQL settings
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "relishauth"
+    username: "postgres"
+    password: "password"
+    use-ssl: false
+    
+    # Connection Pool Settings (HikariCP)
+    pool:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # Table schema customization (advanced)
+  schema:
+    users:
+      table: "users"
+      columns:
+        uuid: "uuid"
+        username: "username"
+        discord_id: "discord_id"
+        first_login: "first_login"
+        last_login: "last_login"
+        ip_address: "ip_address"
+        password: "password"
+        account_type: "account_type"
+        join_notifications: "join_notifications"
+        created_at: "created_at"
+        session_duration: "session_duration"
+    
+    sessions:
+      table: "sessions"
+      columns:
+        uuid: "uuid"
+        discord_id: "discord_id"
+        last_seen: "last_seen"
+        ip_address: "ip_address"
+
+# ════════════════════════════════════════════════════════
+#  AUTHENTICATION
+# ════════════════════════════════════════════════════════
+
+authentication:
+  # Primary authentication method
+  # Options:
+  #   password - Players create a password (Discord optional)
+  #   discord  - Players must link Discord account
+  method: "password"
+  
+  # Premium (paid) account auto-login
+  # When enabled, premium accounts skip authentication
+  # NO SESSION CHECKS - Premium players login instantly every time
+  premium-auto-login: true
+  
+  # Allow cracked/offline clients to join using a username that belongs to a premium (paid) account.
+  # If false, premium usernames connecting with an offline UUID (OfflinePlayer:<name>) will be kicked to prevent impersonation.
+  # SECURITY WARNING: Enabling this can allow impersonation of premium accounts unless you add extra authentication checks.
+  allow-premium-username-impersonation: false
+
+  # Use Mojang (official) UUIDs for premium players on an offline-mode proxy.
+  # When enabled, RelishAuth injects the Mojang UUID into the player's GameProfile during login,
+  # so backend Paper servers will see Mojang UUIDs instead of offline UUIDs (Velocity modern forwarding).
+  #
+  # IMPORTANT:
+  # - This changes player identity on the backend (inventories, claims, etc. may not match old offline UUID data).
+  # - Keep allow-premium-username-impersonation=false unless you fully understand the security implications.
+  premium-use-official-uuid: false
+
+  # If enabled, RelishAuth will attempt a safe DB migration when injecting official UUIDs:
+  # offline UUID (OfflinePlayer:<name>) -> Mojang UUID, in both users and sessions tables.
+  # Migration is skipped if the Mojang UUID already exists in users/sessions.
+  premium-use-official-uuid-migrate-database: true
+  
+  # Allow Bedrock Edition players (requires Floodgate plugin)
+  # When disabled, Bedrock players will be blocked from joining
+  allow-bedrock-players: true
+  
+  # Prevent Discord account switching after unlinking
+  # If enabled, players can only re-link the same Discord account
+  enforce-discord-account-match: true
+  
+  # Password requirements (when method is "password")
+  password:
+    # Length limits
+    min-length: 6
+    max-length: 32
+    
+    # Character requirements
+    require-uppercase: false
+    require-lowercase: false
+    require-numbers: false
+    require-special-chars: false
+
+    # Hashing algorithm
+    # Options:
+    #   argon2   - stronger memory-hard hashing, slower
+    #   bcrypt2y - widely supported bcrypt variant with $2y$ prefix
+    hashing: "argon2"
+    
+    # Argon2 parameters
+    argon2:
+      iterations: 10      # Computational cost (higher = slower, more secure)
+      memory: 65536       # Memory cost in KB (higher = more memory, more secure)
+      parallelism: 1      # Number of parallel threads
+
+    # BCrypt 2Y parameters
+    bcrypt:
+      rounds: 12          # Cost factor (valid range: 4-31)
+
+# ════════════════════════════════════════════════════════
+#  SESSION
+# ════════════════════════════════════════════════════════
+
+session:
+  # How long players stay logged in
+  # Options: 0, 1m, 5m, 15m, 30m, 1h
+  # 0 = No session (verify every time)
+  duration: "5m"
+
+  # Allow login from different IP addresses
+  # NOTE: Session continuation ALWAYS checks IP for security
+  # This setting only affects initial login
+  allow-different-locations: true
+  
+  # Available duration options for players
+  # Used by in-game `/ra session` and Discord `/session` buttons.
+  available-durations:
+    - "0"
+    - "1m"
+    - "5m"
+    - "15m"
+    - "30m"
+    - "1h"
+
+# ════════════════════════════════════════════════════════
+#  SECURITY
+# ════════════════════════════════════════════════════════
+
+security:
+  # Seconds before kicking unauthenticated players
+  authentication-timeout: 300
+
+  # Limbo network read timeout in milliseconds.
+  # Increase this if players get disconnected from limbo before the auth timeout expires.
+  limbo-read-timeout-ms: 120000
+  
+  # Timeout warning settings
+  timeout-warnings:
+    warning-threshold: 30
+    warning-interval: 10
+
+  # Password attempt limiting
+  password-attempts:
+    max-attempts: 3
+    lock-duration: 15  # Minutes
+  
+  # Premium verification settings
+  premium:
+    verification-timeout: 5
+    api-connect-timeout: 5000
+    api-read-timeout: 5000
+    # UUID lookup endpoint is configured in skins.api.username-uuid-lookup-endpoint
+
+# ════════════════════════════════════════════════════════
+#  DISCORD BOT (Optional)
+# ════════════════════════════════════════════════════════
+
+discord:
+  # Bot token from Discord Developer Portal
+  # Get one at: https://discord.com/developers/applications
+  bot-token: "YOUR_BOT_TOKEN_HERE"
+
+  # Discord server ID (right-click server → Copy ID)
+  # Used for username -> userId lookup across multiple guilds.
+  # You can set a single ID:
+  #   server-id: "123..."
+  # Or multiple IDs:
+  #   server-id: ["123...", "456..."]
+  server-id: ""
+
+  # Admin role ID for management commands
+  # Leave empty to require Discord Administrator permission
+  admin-role-id: ""
+
+  # Linked role - assigned when user links Discord account
+  linked-role-id: ""
+
+  # Invite link to your Discord server
+  invite-link: ""
+
+  # Bot status and presence
+  status:
+    enabled: true
+    activity-type: "WATCHING"
+    message: "{players} players online"
+    update-interval: 120
+
+  # Button expiration time (minutes)
+  button-expiration-minutes: 5
+  
+  # Shutdown timeout (seconds)
+  shutdown-timeout: 5
+  
+  # Embed colors (RGB format)
+  colors:
+    blue: "88,101,242"
+    red: "237,66,69"
+    green: "87,242,135"
+    warning: "255,193,7"
+  
+  # API timeouts (seconds)
+  api:
+    request-timeout: 10
+    member-load-timeout: 5
+  
+  # Verification cleanup
+  verification:
+    pending-cleanup-minutes: 5
+  
+  # Guild cache settings
+  cache:
+    member-threshold: 100
+
+  # Join notifications
+  join-notifications:
+    default-enabled: true
+    cooldown: 60
+
+# ════════════════════════════════════════════════════════
+#  CUSTOMIZATION
+# ════════════════════════════════════════════════════════
+
+customization:
+  # Limbo world settings
+  limbo:
+    # Delays and timing (milliseconds)
+    timing:
+      auth-prompt-delay: 100
+      discord-prompt-delay: 1000
+    
+    # Title display timing
+    title:
+      enabled: true
+
+    actionbar:
+      enabled: true
+
+    bossbar:
+      enabled: true
+      color: "BLUE"
+      overlay: "PROGRESS"
+    
+    # Authentication timeout monitor
+    monitor:
+      check-interval: 1
+
+
+# ════════════════════════════════════════════════════════
+#  COMMANDS
+# ════════════════════════════════════════════════════════
+
+commands:
+  logout:
+    disconnect-delay: 100
+
+  # Slash commands
+  commands:
+    enabled: true
+
+    player-commands:
+      password: true
+      notify: true
+      logout: true
+      session: true
+      info: true
+      unlink: true
+
+    admin-commands:
+      info-others: true
+      unlink-others: true
+      reload: true
+      block: true
+      unblock: true
+
+# ════════════════════════════════════════════════════════
+#  SKIN FETCHING
+# ════════════════════════════════════════════════════════
+
+skins:
+  # Enable automatic skin fetching for all players
+  enabled: true
+
+  # Preserve the textures property if it already exists in the login profile.
+  # Useful for Bedrock (Geyser/Floodgate) players where Geyser provides the skin.
+  preserve-existing-textures: true
+
+  # Cape options (for offline/cracked mode)
+  capes:
+    # Inject this cape into UNSIGNED textures payloads when the provider doesn't include a cape.
+    # This is mainly useful for cracked/offline players, since most public APIs only provide skins.
+    #
+    # Value can be either:
+    # - Full URL (http(s)://...)
+    # - A textures.minecraft.net texture hash (example: 64 hex chars)
+    #
+    # Leave empty to disable.
+    default-unsigned-cape: ""
+  
+  # Cache duration (seconds)
+  cache-duration: 604800  # 7 days
+  
+  # API settings
+  api:
+    # Textures endpoint by username (cracked + fallback)
+    # Supports Ely.by-style JSON or Mojang session-style JSON (properties[]).
+    # Placeholder: {nickname} or {username}
+    username-textures-endpoint: ""  # Default: https://skinsystem.ely.by/textures/{nickname}
+
+    # UUID lookup endpoint by username (premium UUID lookup)
+    # Placeholder: {nickname} or {username}
+    username-uuid-lookup-endpoint: ""  # Default: https://api.minecraftservices.com/minecraft/profile/lookup/name/{nickname}
+
+    # Signed textures session endpoint by UUID (premium, returns signed textures)
+    # Placeholder: {uuid} (undashed UUID)
+    uuid-session-endpoint: ""  # Default: https://sessionserver.mojang.com/session/minecraft/profile/{uuid}?unsigned=false
+    
+    # API timeout (seconds)
+    timeout: 10
+
+    # Retry settings
+    retry-attempts: 2
+    retry-delay: 1000  # milliseconds

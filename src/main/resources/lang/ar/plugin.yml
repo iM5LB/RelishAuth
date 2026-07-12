@@ -1,0 +1,318 @@
+# ================================================================================
+# RelishAuth - الرسائل (عربي)
+# ================================================================================
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# إعدادات السيرفر
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+server-name: "السيرفر الخاص بي"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل نجاح التحقق
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+auto-auth-success: "<#87CEEB>✔ <#F0F0F0>مرحباً بعودتك! جاري الاتصال بالسيرفر..."
+premium-auto-auth: "<#87CEEB>✔ <#F0F0F0>تم التحقق من حساب البريميوم! جاري الاتصال بالسيرفر..."
+session-valid: "<#87CEEB>✔ <#F0F0F0>الجلسة صالحة! جاري الاتصال بالسيرفر..."
+premium-auto-login: "<#87CEEB>✔ <#F0F0F0>تم اكتشاف حساب بريميوم! تم تسجيل الدخول تلقائياً."
+bedrock-auto-auth-first: "<#87CEEB>✔ <#F0F0F0>تم اكتشاف Bedrock Edition! مرحباً بك في <#87CEEB>{server}<#F0F0F0>!"
+bedrock-auto-auth-returning: "<#87CEEB>✔ <#F0F0F0>Bedrock Edition - مرحباً بعودتك!"
+authenticated: "<#87CEEB>✔ <#F0F0F0>مرحباً بعودتك، <#87CEEB>{player}<#F0F0F0>!"
+auth-success: "<#87CEEB>✔ <#F0F0F0>تم التحقق بنجاح!"
+first-join: "<#87CEEB>✔ <#F0F0F0>مرحباً بك في <#87CEEB>{server}<#F0F0F0>، <#87CEEB>{player}<#F0F0F0>!"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# واجهات الشاشة
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+limbo:
+  title: "<#1E90FF>RELISH <#87CEEB>Auth"
+  subtitle: "<#A0A0A0>يرجى تسجيل الدخول للمتابعة"
+  actionbar: "<#1E90FF>💙 <#A0A0A0>انتهاء مهلة التحقق خلال: <#87CEEB>{time}s"
+  bossbar: "<#1E90FF>💙 <#A0A0A0>انتهاء مهلة التحقق خلال: <#87CEEB>{time}s"
+
+welcome:
+  enabled: true
+  title: "<#87CEEB>مرحباً <#FFFFFF>{player}<#87CEEB>!"
+  subtitle: "<#A0A0A0>مرحباً بك في <#87CEEB>{server}<#A0A0A0>!"
+  duration: 3
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# التحقق عبر ديسكورد
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+looking-up-discord: "<#1E90FF>💙 <#A0A0A0>جارِ البحث عن مستخدم ديسكورد..."
+request-sent: "<#87CEEB>✔ <#A0A0A0>تم إرسال التحقق إلى ديسكورد! تحقق من الرسائل الخاصة."
+auth-timeout-warning: "<#FFA500>⚠ <#A0A0A0>انتهاء المهلة خلال <#FFA500>{time}"
+already-linked: "<#FF6B6B>✖ <#A0A0A0>هذا الديسكورد مربوط بحساب آخر!"
+discord-linked-success: "<#87CEEB>✔ <#A0A0A0>تم ربط حساب ديسكورد بنجاح!"
+discord-bot-not-configured: "<#FF6B6B>✖ <#A0A0A0>بوت ديسكورد غير مهيأ"
+waiting-discord-verification: "<#A0A0A0>⏳ بانتظار التحقق عبر ديسكورد..."
+discord-join-server-first: "<#A0A0A0>تأكد من انضمامك لسيرفر ديسكورد أولاً"
+discord-join-here: "<#87CEEB>▶ <#A0A0A0>انضم هنا: "
+discord-contact-admin-invite: "<#A0A0A0>تواصل مع الأدمن للحصول على رابط ديسكورد"
+discord-rejoin-reconnect: "<#808080>بعد الانضمام، أعد الاتصال وحاول مرة أخرى"
+discord-username-not-found-general: "<#FF6B6B>✗ <#A0A0A0>لم يتم العثور على اسم مستخدم ديسكورد!"
+discord-use-username-not-display: "<#A0A0A0>تأكد من استخدامك لـ <#1E90FF>اسم المستخدم<#A0A0A0> في ديسكورد، وليس اسم العرض"
+discord-username-under-display: "<#808080>اسم المستخدم يظهر تحت اسم العرض"
+discord-not-in-server: "<#FFA500>⚠ <#A0A0A0>أنت لست في سيرفر ديسكورد الخاص بنا!"
+discord-must-join-authenticate: "<#A0A0A0>يجب عليك الانضمام للسيرفر للمصادقة"
+
+discord-auth-required:
+  - ""
+  - "<#FFA500>⚠ يتطلب التحقق عبر ديسكورد"
+  - ""
+  - "<#A0A0A0>هذا السيرفر يتطلب التحقق عبر ديسكورد"
+  - ""
+  - "<#87CEEB>▶ <#A0A0A0>اكتب <#87CEEB>اسم المستخدم<#A0A0A0> في ديسكورد"
+  - ""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# التحقق عبر كلمة المرور
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+auth:
+  login:
+    prompt:
+      - ""
+      - "<#1E90FF>💙 <#87CEEB>مرحباً بعودتك إلى {server}!"
+      - ""
+      - "<#87CEEB>▶ <#A0A0A0>اكتب كلمة المرور في الشات"
+      - ""
+    wrong-password: "<#FF6B6B>✗ <#A0A0A0>كلمة مرور خاطئة! المحاولات المتبقية: <#FFA500>{attempts}"
+    locked-out: "<#FF6B6B>🔒 <#A0A0A0>تم قفل الحساب لمدة <#FFA500>{minutes} <#A0A0A0>دقيقة"
+    success: "<#87CEEB>✔ <#F0F0F0>تم تسجيل الدخول بنجاح! جاري الاتصال بالسيرفر..."
+
+  register:
+    prompt:
+      - ""
+      - "<#1E90FF>💙 <#87CEEB>مرحباً بك في {server}!"
+      - ""
+      - "<#87CEEB>▶ <#A0A0A0>اكتب كلمة مرور في الشات لتأمين حسابك"
+      - "<#808080>الحد الأدنى: {min} حرف | الحد الأقصى: {max} حرف"
+      - ""
+    confirm:
+      - ""
+      - "<#1E90FF>▶ <#A0A0A0>أعد كتابة كلمة المرور للتأكيد"
+      - ""
+    success: "<#87CEEB>✔ <#F0F0F0>تم التسجيل بنجاح! جاري الاتصال بالسيرفر..."
+    already-registered: "<#FF6B6B>✗ <#A0A0A0>أنت مسجل بالفعل!"
+
+password-validation-failed: "<#FF6B6B>✗ <#A0A0A0>{message}"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل الأخطاء
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+error-only-players: "<#FF6B6B>✖ <#A0A0A0>اللاعبون فقط يمكنهم استخدام هذا الأمر"
+error-occurred: "<#FF6B6B>✖ <#A0A0A0>حدث خطأ: {message}"
+error-invalid-username: "<#FF6B6B>✖ <#A0A0A0>اسم مستخدم غير صالح"
+error-auth-system-unavailable: "<#FF6B6B>✖ <#A0A0A0>نظام المصادقة غير متاح. يرجى المحاولة لاحقاً."
+error-auth-init-failed: "<#FF6B6B>✖ <#A0A0A0>فشل تهيئة المصادقة. يرجى المحاولة مرة أخرى."
+error-auth-complete: "<#FF6B6B>✖ <#A0A0A0>يرجى إكمال المصادقة أولاً."
+error-verification-failed: "<#FF6B6B>✖ <#A0A0A0>تعذر التحقق من اتصالك. يرجى إعادة الاتصال."
+error-discord-dm-sent: "<#87CEEB>✔ <#A0A0A0>تم إرسال طلب التحقق عبر ديسكورد! تحقق من رسائلك الخاصة."
+error-login-failed: "<#FF6B6B>✖ <#A0A0A0>فشل تسجيل الدخول. يرجى المحاولة مرة أخرى."
+error-auth-processing: "<#FF6B6B>✖ <#A0A0A0>خطأ في معالجة المصادقة. يرجى المحاولة مرة أخرى."
+error-registration-failed: "<#FF6B6B>✖ <#A0A0A0>فشل التسجيل. يرجى المحاولة مرة أخرى."
+error-discord-already-linked: "<#FF6B6B>✖ <#A0A0A0>حساب ديسكورد هذا مرتبط بلاعب آخر."
+error-plugin-not-initialized: "<#FF6B6B>✖ <#A0A0A0>البلجن لم يتم تهيئته بعد. يرجى الانتظار."
+error-database: "<#FF6B6B>✖ <#A0A0A0>حدث خطأ في قاعدة البيانات. يرجى التواصل مع الإدارة."
+error-unexpected: "<#FF6B6B>✖ <#A0A0A0>حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
+error-auth-unavailable: "<#FF6B6B>✖ <#A0A0A0>نظام المصادقة غير متاح."
+error-auth-service-unavailable: "<#FF6B6B>✖ <#A0A0A0>خدمة المصادقة غير متاحة."
+error-config-reload: "<#FF6B6B>✖ <#A0A0A0>فشل إعادة تحميل الإعدادات."
+error-unlink-player: "<#FF6B6B>✖ <#A0A0A0>فشل إلغاء ربط اللاعب. يرجى المحاولة مرة أخرى."
+error-auth-failed-generic: "<#FF6B6B>✖ <#A0A0A0>فشلت المصادقة. يرجى إعادة الاتصال والمحاولة مرة أخرى."
+
+# Premium errors
+premium-offline-blocked:
+  - "<#FF6B6B>✖ <#A0A0A0>هذا الاسم مسجل كحساب بريميوم."
+  - ""
+  - "<#A0A0A0>يرجى الاتصال بحساب ماينكرافت صالح."
+  - ""
+
+bedrock-not-supported:
+  - "<#FF6B6B>✖ <#A0A0A0>إصدار Bedrock غير مدعوم في هذا السيرفر."
+  - ""
+  - "<#A0A0A0>يرجى استخدام Minecraft Java Edition للاتصال."
+  - ""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل الطرد
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+kick:
+  timeout:
+    - "<#FF6B6B>⏱ انتهاء مهلة التحقق"
+    - ""
+    - "<#A0A0A0>أعد الدخول وحاول التحقق بسرعة"
+    - ""
+
+  session-cleared:
+    - "<#87CEEB>✔ تم مسح الجلسات"
+    - ""
+    - "<#A0A0A0>تم مسح جميع الجلسات"
+    - "<#A0A0A0>أعد الدخول للتحقق مجدداً"
+    - ""
+
+  logged-out:
+    - "<#1E90FF>💙 تسجيل الخروج"
+    - ""
+    - "<#A0A0A0>تم مسح جميع الجلسات"
+    - ""
+
+  account-unlinked:
+    - "<#FFA500>⚠ تم إلغاء ربط الحساب"
+    - ""
+    - "<#A0A0A0>تم إلغاء ربط حساب ديسكورد"
+    - "<#A0A0A0>يرجى إعادة الاتصال للمصادقة مجدداً"
+    - ""
+
+  admin-unlink:
+    - "<#FFA500>⚠ تم إلغاء ربط الحساب"
+    - ""
+    - "<#A0A0A0>قام الأدمن بإلغاء ربط حسابك"
+    - ""
+
+  verification-denied:
+    - "<#FF6B6B>✖ التحقق مرفوض"
+    - ""
+    - "<#A0A0A0>تم رفض الوصول من قبل المالك"
+    - ""
+
+  ip-blocked-permanent:
+    - "<#FF6B6B>✖ IP محظور"
+    - ""
+    - "<#A0A0A0>تم حظر عنوان IP بشكل دائم"
+    - ""
+
+  discord-left-server:
+    - "<#FF6B6B>✖ ديسكورد مطلوب"
+    - ""
+    - "<#A0A0A0>لقد غادرت سيرفر ديسكورد"
+    - "<#A0A0A0>يرجى الانضمام مرة أخرى للمتابعة"
+    - ""
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل الأوامر
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+commands:
+  login:
+    not-registered: "<#FF6B6B>✗ <#A0A0A0>أنت غير مسجل! يرجى التسجيل أولاً."
+
+cmd-no-permission: "<#FF6B6B>✖ <#A0A0A0>ليس لديك صلاحية"
+cmd-password-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra password <pass> <confirm>"
+cmd-password-mismatch: "<#FF6B6B>✖ <#A0A0A0>كلمات المرور غير متطابقة!"
+cmd-password-changed: "<#87CEEB>✔ <#A0A0A0>تم تغيير كلمة المرور بنجاح!"
+cmd-password-set: "<#87CEEB>✔ <#A0A0A0>تم تعيين كلمة المرور بنجاح!"
+cmd-discord-already-linked: "<#FFA500>⚠ <#A0A0A0>حسابك مربوط بديسكورد بالفعل"
+
+cmd-authenticated-required: "<#FF6B6B>✖ <#A0A0A0>يجب أن تكون مصادق عليه أولاً!"
+cmd-account-data-not-found: "<#FF6B6B>✖ <#A0A0A0>لم يتم العثور على بيانات الحساب!"
+cmd-not-registered: "<#FF6B6B>✖ <#A0A0A0>أنت غير مسجل!"
+cmd-config-reloaded: "<#87CEEB>✔ <#A0A0A0>تم إعادة تحميل الإعدادات بنجاح"
+cmd-config-reload-failed: "<#FF6B6B>✖ <#A0A0A0>فشل إعادة التحميل: {error}"
+cmd-player-not-found: "<#FF6B6B>✖ <#A0A0A0>اللاعب غير موجود: {player}"
+cmd-player-unlinked: "<#87CEEB>✔ <#A0A0A0>تم إلغاء ربط {player} بنجاح"
+cmd-session-updated: "<#87CEEB>✔ <#A0A0A0>تم تعيين مدة الجلسة إلى: <#87CEEB>{duration}"
+
+cmd-discord-link-usage:
+  - ""
+  - "<#1E90FF>💙 <#87CEEB>ربط حساب ديسكورد"
+  - ""
+  - "<#A0A0A0>اربط حساب ديسكورد لتفعيل الإشعارات وإدارة الجلسات"
+  - ""
+  - "<#A0A0A0>الاستخدام: <#87CEEB>/ra discord <username>"
+  - "<#808080>مثال: /ra discord john_doe"
+  - ""
+
+cmd-discord-not-linked-notify: "<#FF6B6B>✖ <#A0A0A0>يجب عليك ربط حساب ديسكورد لاستخدام الإشعارات!"
+cmd-discord-link-prompt: "<#87CEEB>▶ <#A0A0A0>استخدم: <#87CEEB>/ra discord <username> <#A0A0A0>لربط حسابك"
+
+cmd-notifications-header:
+  - "<#87CEEB>✦ <#FFFFFF>الإشعارات"
+  - ""
+
+cmd-notifications-current: "<#A0A0A0>الحالة الحالية: {status}"
+cmd-notifications-status-on: "<#87CEEB>مفعّل"
+cmd-notifications-status-off: "<#FF6B6B>معطّل"
+cmd-notifications-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra notify <on/off>"
+cmd-notifications-invalid: "<#FF6B6B>✖ <#A0A0A0>خيار غير صحيح! استخدم: <#87CEEB>on <#A0A0A0>أو <#87CEEB>off"
+cmd-notifications-enabled: "<#87CEEB>✔ <#A0A0A0>تم تفعيل إشعارات الدخول"
+cmd-notifications-disabled: "<#87CEEB>✔ <#A0A0A0>تم تعطيل إشعارات الدخول"
+
+cmd-session-header:
+  - "<#87CEEB>✦ <#FFFFFF>مدة الجلسة"
+  - ""
+
+cmd-session-current: "<#A0A0A0>الحالي: <#87CEEB>{duration}"
+cmd-session-select: "<#87CEEB>اختر مدة الجلسة:"
+cmd-session-invalid: "<#FF6B6B>✖ <#A0A0A0>مدة جلسة غير صحيحة!"
+cmd-session-valid-options: "<#808080>الخيارات الصحيحة: 0, 1m, 5m, 15m, 30m, 1h"
+cmd-player-not-linked: "<#FF6B6B>✖ <#A0A0A0>اللاعب غير مربوط بأي حساب ديسكورد"
+
+# أوامر الأدمن للأمان
+cmd-block-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra block <username> <from>"
+cmd-block-ip-not-found: "<#FF6B6B>✖ <#A0A0A0>تعذر تحديد الـIP من: <#87CEEB>{from}"
+cmd-block-success: "<#87CEEB>✔ <#A0A0A0>تم حظر IP <#87CEEB>{ip} <#A0A0A0>لاسم المستخدم <#87CEEB>{username}"
+
+cmd-unblock-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra unblock <username> <from>"
+cmd-unblock-ip-not-found: "<#FF6B6B>✖ <#A0A0A0>تعذر تحديد الـIP من: <#87CEEB>{from}"
+cmd-unblock-not-blocked: "<#FFA500>⚠ <#A0A0A0>هذا الـIP غير محظور لهذا الاسم."
+cmd-unblock-success: "<#87CEEB>✔ <#A0A0A0>تم إلغاء حظر IP <#87CEEB>{ip} <#A0A0A0>لاسم المستخدم <#87CEEB>{username}"
+cmd-unblock-nothing: "<#FFA500>⚠ <#A0A0A0>لا يوجد شيء لإلغاء الحظر لهذا الـIP/الاسم."
+
+cmd-clearblocks-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra clearblocks <username>"
+cmd-clearblocks-success: "<#87CEEB>✔ <#A0A0A0>تم مسح <#87CEEB>{count} <#A0A0A0>حظر(ات) لاسم المستخدم <#87CEEB>{username}"
+
+cmd-admin-setpassword-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra setpassword <player> <newPassword> <confirmPassword>"
+cmd-admin-setpassword-success: "<#87CEEB>✔ <#A0A0A0>تم تحديث كلمة المرور لـ <#87CEEB>{player}"
+cmd-admin-setpassword-failed: "<#FF6B6B>✖ <#A0A0A0>فشل تعيين كلمة المرور: {error}"
+
+cmd-admin-resetpassword-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CEEB>/ra resetpassword <player> [length]"
+cmd-admin-resetpassword-success: "<#87CEEB>✔ <#A0A0A0>تم إعادة تعيين كلمة المرور لـ <#87CEEB>{player}<#A0A0A0>. كلمة المرور المؤقتة: <#87CEEB>{password}"
+cmd-admin-resetpassword-failed: "<#FF6B6B>✖ <#A0A0A0>فشل إعادة تعيين كلمة المرور: {error}"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل إلغاء الربط
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+unlink-not-linked: "<#FF6B6B>✖ <#A0A0A0>حسابك غير مربوط!"
+unlink-cannot-unlink-special: "<#FF6B6B>✖ <#A0A0A0>لا يمكنك إلغاء ربط حساب كلمة مرور فقط أو حساب بريميوم!"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل أمر المعلومات
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+info-header: "<#87CEEB>◦ <#FFFFFF>RelishAuth <#A0A0A0>v{version}"
+info-latest-version: "<#87CEEB>✔ <#A0A0A0>أنت تستخدم أحدث إصدار"
+info-update-available: "<#FFA500>⚠ <#A0A0A0>تحديث متاح: <#87CEEB>{version}"
+info-update-download: "<#87CEEB>▶ <#A0A0A0>تحميل: <#94B8FF>{url}"
+
+update-checking: "<#A0A0A0>جاري التحقق من التحديثات..."
+update-config-updated: "<#87CEEB>✔ <#A0A0A0>تم تحديث الإعدادات بقيم جديدة"
+update-config-current: "<#87CEEB>✔ <#A0A0A0>الإعدادات محدثة"
+update-lang-updated: "<#87CEEB>✔ <#A0A0A0>تم تحديث ملفات اللغة"
+update-lang-current: "<#87CEEB>✔ <#A0A0A0>ملفات اللغة محدثة"
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# رسائل أمر المساعدة
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+help-header: "<#87CEEB>✦ RelishAuth"
+help-password: "<#87CEEB>/ra password <pass> <confirm> <#A0A0A0>تعيين كلمة مرور"
+help-logout: "<#87CEEB>/ra logout <#A0A0A0>مسح الجلسات وتسجيل الخروج"
+help-discord: "<#87CEEB>/ra discord <username> <#A0A0A0>ربط ديسكورد"
+help-unlink: "<#87CEEB>/ra unlink <#A0A0A0>إلغاء ربط ديسكورد"
+help-notify: "<#87CEEB>/ra notify <on/off> <#A0A0A0>تبديل الإشعارات"
+help-session: "<#87CEEB>/ra session [duration] <#A0A0A0>تعيين مدة الجلسة"
+help-admin: "<#87CEEB>أوامر الأدمن"
+help-reload: "<#87CEEB>/ra reload <#A0A0A0>إعادة تحميل الإعدادات"
+help-info: "<#87CEEB>/ra info <#A0A0A0>معلومات البلجن"
+help-unlink-player: "<#87CEEB>/ra unlink <player> <#A0A0A0>إلغاء ربط حساب"
+help-setpassword: "<#87CEEB>/ra setpassword <player> <new> <confirm> <#A0A0A0>تعيين كلمة مرور (أدمن)"
+help-resetpassword: "<#87CEEB>/ra resetpassword <player> [len] <#A0A0A0>إعادة تعيين كلمة المرور (أدمن)"
+help-ip-blocks: "<#87CEEB>/ra block|unblock|clearblocks ... <#A0A0A0>حظر IP (أدمن)"

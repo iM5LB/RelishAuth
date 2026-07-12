@@ -1,0 +1,677 @@
+# ================================================================================
+# RelishAuth - Discord Messages
+# ================================================================================
+
+# Default embed settings
+defaults:
+  color: "#F0B232"
+  footer: "RelishAuth"
+  timestamp: true
+  thumbnail: true
+
+# ════════════════════════════════════════════════════════════════════════════
+# VERIFICATION REQUEST (sent when player joins server)
+# ════════════════════════════════════════════════════════════════════════════
+verification-request:
+  title:
+    new-account: "🔗 Link Discord Account"
+    returning: "🔐 Session Verification"
+  
+  description:
+    new-account: "Link your Discord account to **{player}** on **{server}**."
+    returning: "Welcome back! Verify your identity to continue playing."
+  
+  color:
+    new-account: "#5865F2"
+    returning: "#57F287"
+  
+  fields:
+    - name: "Player"
+      value: "{player}"
+      inline: true
+    - name: "Server"
+      value: "{server}"
+      inline: true
+  
+  footer: "Click Verify • Expires in {timeout}"
+  
+  buttons:
+    verify:
+      label: "Verify"
+      emoji: "✅"
+      style: "success"
+    deny:
+      label: "Not Me"
+      emoji: "🚫"
+      style: "danger"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SESSION CONTROL (sent after successful authentication)
+# ════════════════════════════════════════════════════════════════════════════
+session-control:
+  title: "✅ Successfully Authenticated"
+  description: "You're now connected to **{server}**!"
+  color: "#57F287"
+  
+  fields:
+    - name: "Account"
+      value: "👤 **{player}**\n🌐 {server}"
+      inline: false
+  
+  footer: "RelishAuth"
+
+# ════════════════════════════════════════════════════════════════════════════
+# BUTTON RESPONSES
+# ════════════════════════════════════════════════════════════════════════════
+responses:
+  verify-success:
+    message: "✅ **Verified!** Your Discord account has been linked."
+    color: "#57F287"
+  
+  verify-expired:
+    message: "⏱️ **Verification Expired**\nPlease rejoin the Minecraft server to receive a new verification request."
+    color: "#FEE75C"
+  
+  deny-success:
+    message: "🚫 **Access Denied**\nThe connection attempt has been blocked."
+    color: "#ED4245"
+  
+  deny-expired:
+    message: "⏱️ **Request Expired**\nThe verification request has already expired or been used."
+    color: "#FEE75C"
+  
+  session-not-found:
+    message: "❓ **Session Not Found**\nThis session may have expired or been terminated."
+    color: "#FEE75C"
+  
+  button-expired:
+    message: "⏱️ **Button Expired**\n\nThis button has expired. Please request a new verification or use the appropriate command."
+  
+  blacklisted:
+    message: "❌ **ACCESS DENIED**\n\nYour Discord account has been blacklisted from this server."
+  
+  player-offline:
+    message: "⏱️ **Player Offline**\n\nThe player has disconnected. They'll need to rejoin to authenticate."
+  
+  player-not-online:
+    message: "❌ Player is no longer online."
+  
+  auth-unavailable:
+    message: "❌ Authentication system is unavailable."
+  
+  invalid-request:
+    message: "❌ Invalid request."
+  
+  invalid-session:
+    message: "❌ Invalid session."
+  
+  unlink-initiated:
+    message: "✅ Unlink request initiated. Please check your DMs for verification steps."
+  
+  unlink-confirmed:
+    message: "✅ Unlink confirmed! Your Discord account has been unlinked."
+  
+  unlink-denied:
+    message: "❌ Unlink request denied."
+  
+  invalid-uuid:
+    message: "❌ Invalid player UUID."
+  
+  player-kicked:
+    message: "✅ Kicked **{player}** from the server."
+  
+  player-unlinked:
+    message: "✅ Unlinked player's Discord account."
+  
+  account-mismatch:
+    message: "❌ **Discord Account Mismatch**\n\nThis account is linked to a different Discord account.\n\n**Expected Discord ID:** `{expected_id}`\n**Your Discord ID:** `{your_id}`\n\nPlease use your original Discord account to verify."
+  
+  not-your-button:
+    message: "❌ This is not your button!"
+  
+  notifications-enabled:
+    message: "✅ Join notifications enabled! You will receive Discord notifications when you join the server."
+  
+  notifications-disabled:
+    message: "✅ Join notifications disabled! You will no longer receive Discord notifications when you join the server."
+
+  # Admin command responses
+  no-permission:
+    message: "❌ You don't have permission to use this command."
+  
+  already-linked:
+    message: "❌ Your Discord is already linked to account: **{username}**"
+  
+  no-account:
+    message: "❌ You don't have a linked Minecraft account. Please join the server first to link your account."
+  
+  invalid-duration:
+    message: "❌ Invalid duration! Valid options: `0`, `5m`, `15m`, `30m`, `1h`"
+  
+  no-linked-account:
+    message: "❌ You don't have a linked Minecraft account."
+  
+  invalid-option:
+    message: "❌ Invalid option! Use `on` or `off`"
+  
+  parameter-required:
+    message: "❌ {parameter} parameter is required."
+  
+  player-not-found:
+    message: "❌ Player not found in database."
+  
+  player-data-not-found:
+    message: "❌ Player data not found."
+  
+  reload-failed:
+    message: "❌ Reload failed: {error}"
+  
+  ip-username-required:
+    message: "❌ IP and username parameters are required."
+  
+  invalid-ip-format:
+    message: "❌ Invalid IP address format."
+  
+  from-required:
+    message: "❌ From parameter is required (player name or IP address)."
+  
+  could-not-determine-ip:
+    message: "❌ Could not determine IP address from **{from}**. Player must be online or have joined before."
+  
+  modal-expired:
+    message: "⏱️ **Button Expired**\n\nThis button has expired. Please use the appropriate command again."
+  
+  no-password-set:
+    message: "❌ You don't have a password set."
+  
+  password-fields-required:
+    message: "❌ Password fields are required."
+  
+  passwords-mismatch:
+    message: "❌ Passwords do not match. Please try again."
+  
+  password-length-invalid:
+    message: "❌ Password must be between 6 and 50 characters."
+  
+  password-set-failed:
+    message: "❌ Failed to set password. Please try again later."
+
+# ════════════════════════════════════════════════════════════════════════════
+# LOGOUT (sent when user logs out)
+# ════════════════════════════════════════════════════════════════════════════
+logout:
+  title: "🚪 Logged Out"
+  description: "You have been logged out and all sessions cleared."
+  color: "#FFA300"
+  
+  fields:
+    - name: "Status"
+      value: "All sessions ended successfully"
+      inline: false
+    - name: "💡 Tip"
+      value: "Want to verify every time you join? Click the button below to disable session saving."
+      inline: false
+  
+  footer: "RelishAuth"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SESSION DURATION PICKER (sent when user wants to set session duration)
+# ════════════════════════════════════════════════════════════════════════════
+session-duration-picker:
+  title: "⏱️ Set Session Duration"
+  description: "Choose how long you want this session to last."
+  color: "#5865F2"
+  
+  fields:
+    - name: "Current Duration"
+      value: "{current_duration}"
+      inline: false
+    - name: "ℹ️ Information"
+      value: "**Longer** = Less frequent authentication\n**Shorter** = Better security\n**No Save** = Maximum security"
+      inline: false
+  
+  footer: "RelishAuth"
+
+# ════════════════════════════════════════════════════════════════════════════
+# DURATION UPDATED (sent when session duration is changed)
+# ════════════════════════════════════════════════════════════════════════════
+duration-updated:
+  title: "✅ Duration Updated"
+  description: "Session duration has been set to **{duration}**."
+  color: "#57F287"
+  
+  fields:
+    - name: "Applies To"
+      value: "Future logins on this account"
+      inline: false
+  
+  footer: "RelishAuth"
+
+# ════════════════════════════════════════════════════════════════════════════
+# ACCOUNT UNLINKED (sent when Discord account is unlinked)
+# ════════════════════════════════════════════════════════════════════════════
+account-unlinked:
+  title: "🔗 Account Unlinked"
+  description: "Your Discord account has been unlinked successfully."
+  color: "#FFA300"
+  
+  fields:
+    - name: "Status"
+      value: "You can now link a different Discord account"
+      inline: false
+  
+  footer: "RelishAuth"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SERVER JOIN ALERT (sent when someone joins with your account)
+# ════════════════════════════════════════════════════════════════════════════
+server-join-alert:
+  title: "🔔 Server Join Alert"
+  description: "**{player}** joined the server"
+  color: "#57F287"
+  
+  password-status-set: "🔒 Set"
+  password-status-not-set: "❌ Not Set"
+  
+  fields:
+    - name: "Player"
+      value: "👤 **{player}**"
+      inline: true
+    - name: "Time"
+      value: "<t:{timestamp}:R>"
+      inline: true
+    - name: "Password"
+      value: "{password_status}"
+      inline: true
+    - name: "🛡️ Security"
+      value: "If this was NOT you, click the button below to kick them and clear all sessions."
+      inline: false
+    - name: "💡 Tip"
+      value: "Consider setting a password for additional security!"
+      inline: false
+      condition: "no_password"
+  
+  footer: "You can ignore this if it's you"
+  
+  buttons:
+    logout:
+      label: "Logout"
+      emoji: "🚫"
+      style: "danger"
+    set-password:
+      label: "Set Password"
+      emoji: "🔑"
+      style: "primary"
+    change-password:
+      label: "Change Password"
+      emoji: "🔑"
+      style: "primary"
+    disable-notifications:
+      label: "Disable Notifications"
+      emoji: "🔕"
+      style: "secondary"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SESSIONS CLEARED (sent when sessions are cleared)
+# ════════════════════════════════════════════════════════════════════════════
+sessions-cleared:
+  title: "✅ Sessions Cleared"
+  description: "Player has been kicked and all sessions have been cleared."
+  color: "#57F287"
+  
+  fields:
+    - name: "Status"
+      value: "Your account is now secure"
+      inline: false
+  
+  footer: "RelishAuth Security"
+
+sessions-cleared-offline:
+  title: "✅ Sessions Cleared"
+  description: "All sessions have been cleared."
+  color: "#57F287"
+  
+  fields:
+    - name: "Status"
+      value: "Your account is now secure"
+      inline: false
+  
+  footer: "RelishAuth Security"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SERVER MEMBERSHIP REQUIRED (sent when player is not in Discord server)
+# ════════════════════════════════════════════════════════════════════════════
+server-membership-required:
+  title: "🚫 Discord Server Membership Required"
+  description: "**You tried to join the Minecraft server but you're not in our Discord server yet!**\n\nYou must be a member of the Discord server to authenticate and play."
+  color: "#FFA500"
+  
+  fields:
+    - name: "🎮 Minecraft Username"
+      value: "`{player}`"
+      inline: false
+    - name: "📨 Join Our Discord Server"
+      value: "Click the link below to join:\n{invite_link}"
+      inline: false
+      condition: "has_invite"
+    - name: "❌ No Invite Link"
+      value: "Please contact the server administrator for an invite link"
+      inline: false
+      condition: "no_invite"
+    - name: "✅ Next Steps"
+      value: "1️⃣ Join the Discord server\n2️⃣ Rejoin the Minecraft server\n3️⃣ Complete authentication"
+      inline: false
+  
+  footer: "RelishAuth Authentication • Please join to continue"
+
+# ════════════════════════════════════════════════════════════════════════════
+# SECURITY ALERT (sent when multiple failed password attempts detected)
+# ════════════════════════════════════════════════════════════════════════════
+security-alert:
+  title: "🚨 Security Alert"
+  description: "Multiple failed password attempts detected on your account"
+  color: "#ED4245"
+  
+  fields:
+    - name: "Player"
+      value: "`{player}`"
+      inline: true
+    - name: "IP Address"
+      value: "||`{ip}`||"
+      inline: true
+    - name: "Failed Attempts"
+      value: "`{attempts}`"
+      inline: true
+    - name: "Time"
+      value: "<t:{timestamp}:R>"
+      inline: true
+    - name: "⚠️ What to do?"
+      value: "If this was NOT you, someone may be trying to access your account.\nConsider changing your password or clearing all sessions."
+      inline: false
+  
+  footer: "RelishAuth Security"
+
+# ════════════════════════════════════════════════════════════════════════════
+# UNLINK SYSTEM
+# ════════════════════════════════════════════════════════════════════════════
+unlink-verification:
+  title: "⚠️ Unlink Verification Required"
+  description: "Someone is attempting to unlink your Discord account from **{player}**"
+  color: "#FFC107"
+  fields:
+    - name: "Player"
+      value: "`{player}`"
+      inline: true
+    - name: "UUID"
+      value: "`{uuid}`"
+      inline: true
+    - name: "Action"
+      value: "Confirm or deny this unlink request below"
+      inline: false
+  footer: "RelishAuth Security"
+  buttons:
+    confirm:
+      label: "Confirm Unlink"
+      emoji: "✅"
+      style: "success"
+    deny:
+      label: "Deny"
+      emoji: "❌"
+      style: "danger"
+
+unlink-password-prompt:
+  title: "🔐 Password Required for Unlink"
+  description: "To unlink your Discord account, please reply with your password."
+  color: "#FFC107"
+  fields:
+    - name: "Security"
+      value: "Your password will be verified before proceeding"
+      inline: false
+  footer: "RelishAuth Security"
+
+unlink-password-incorrect:
+  title: "❌ Incorrect Password"
+  description: "The password you entered was incorrect. Please try again."
+  color: "#ED4245"
+  fields:
+    - name: "Attempts"
+      value: "{attempts}/3"
+      inline: false
+
+unlink-failed:
+  title: "❌ Unlink Failed"
+  description: "{reason}"
+  color: "#ED4245"
+
+unlink-complete:
+  title: "✅ Account Unlinked"
+  description: "Your Discord account has been successfully unlinked from Minecraft."
+  color: "#57F287"
+  fields:
+    - name: "Next Steps"
+      value: "You can link a new account by joining the server again"
+      inline: false
+
+# ════════════════════════════════════════════════════════════════════════════
+# BUTTON REPLIES
+# ════════════════════════════════════════════════════════════════════════════
+button-replies:
+  expired: "⏱️ **Button Expired**\n\nThis button has expired. Please request a new verification or use the appropriate command."
+  blacklisted: "❌ **ACCESS DENIED**\n\nYour Discord account has been blacklisted from this server."
+  player-offline: "⏱️ **Player Offline**\n\nThe player has disconnected. They'll need to rejoin to authenticate."
+  player-not-online: "❌ Player is no longer online."
+  auth-unavailable: "❌ Authentication system is unavailable."
+  invalid-request: "❌ Invalid request."
+  invalid-session: "❌ Invalid session."
+  unlink-initiated: "✅ Unlink request initiated. Please check your DMs for verification steps."
+  unlink-confirmed: "✅ Unlink confirmed! Your Discord account has been unlinked."
+  unlink-denied: "❌ Unlink request denied."
+  invalid-uuid: "❌ Invalid player UUID."
+  player-kicked: "✅ Kicked **{player}** from the server."
+  player-unlinked: "✅ Unlinked player's Discord account."
+
+# ════════════════════════════════════════════════════════════════════════════
+# SLASH COMMANDS
+# ════════════════════════════════════════════════════════════════════════════
+
+# /link command
+link-instructions:
+  title: "🔗 Link Discord Account"
+  description: "To link your Discord to an existing password-only account:"
+  color: "#5865F2"
+  fields:
+    - name: "Step 1"
+      value: "Join the Minecraft server with your existing account"
+      inline: false
+    - name: "Step 2"
+      value: "Login with your password"
+      inline: false
+    - name: "Step 3"
+      value: "Run the command `/ra discord [username]` in-game"
+      inline: false
+    - name: "Step 4"
+      value: "Confirm the link by clicking the button that appears"
+      inline: false
+  footer: "RelishAuth"
+
+# /session command - when showing current session
+session-info:
+  title: "⏱️ Session Duration"
+  description: "Manage your session duration settings"
+  color: "#5865F2"
+  fields:
+    - name: "Current Duration"
+      value: "{current_duration}"
+      inline: false
+    - name: "ℹ️ Information"
+      value: "**Longer durations** = Less frequent authentication\n**Shorter durations** = Better account security\n**No Save** = Maximum security (verify every time)"
+      inline: false
+  footer: "Select a duration option below"
+
+# /session command - after setting duration
+session-duration-set:
+  title: "✅ Session Duration Updated"
+  description: "Your session duration has been set to **{duration}**."
+  color: "#57F287"
+  fields:
+    - name: "Effect"
+      value: "This will apply to your future logins"
+      inline: false
+  footer: "RelishAuth"
+
+# /info command - account information
+account-info:
+  title: "📊 Account Information"
+  description: "Your RelishAuth account details"
+  color: "#5865F2"
+  fields:
+    - name: "Minecraft Account"
+      value: "👤 **{username}**\n🆔 `{uuid}`"
+      inline: false
+    - name: "Discord Account"
+      value: "<@{discord_id}>\n🆔 `{discord_id}`"
+      inline: false
+    - name: "Security"
+      value: "{password_status}\n{premium_status}"
+      inline: false
+    - name: "Session"
+      value: "⏱️ Duration: **{session_duration}**\n{session_status}"
+      inline: false
+    - name: "Statistics"
+      value: "📅 First Join: <t:{first_join}:R>\n🔄 Last Login: <t:{last_login}:R>"
+      inline: false
+  footer: "RelishAuth"
+
+# /notifications command
+notifications-toggle:
+  title: "🔔 Join Notifications"
+  description: "Manage your server join notification settings"
+  color: "#5865F2"
+  fields:
+    - name: "Current Status"
+      value: "{status}"
+      inline: false
+    - name: "ℹ️ What are notifications?"
+      value: "When enabled, you'll receive a Discord DM every time someone joins the server with your account."
+      inline: false
+    - name: "⚠️ Security"
+      value: "This helps you detect unauthorized access to your account."
+      inline: false
+  footer: "Use the buttons below to toggle"
+
+# /kick command (admin)
+admin-kick-success:
+  title: "✅ Player Kicked"
+  description: "Successfully kicked **{player}** from the server"
+  color: "#57F287"
+  fields:
+    - name: "Status"
+      value: "Player removed from server"
+      inline: false
+  footer: "RelishAuth Admin"
+
+# /block command (admin)
+admin-block-success:
+  title: "✅ Username Blocked"
+  description: "Successfully blocked username **{username}** from IP **{ip}**"
+  color: "#57F287"
+  fields:
+    - name: "Details"
+      value: "This IP address can no longer join with this username"
+      inline: false
+  footer: "RelishAuth Admin"
+
+admin-block-failed:
+  title: "❌ Block Failed"
+  description: "Failed to block username: {error}"
+  color: "#ED4245"
+  footer: "RelishAuth Admin"
+
+# /unblock command (admin)
+admin-unblock-success:
+  title: "✅ Username Unblocked"
+  description: "Successfully unblocked **{count}** entries for **{identifier}**"
+  color: "#57F287"
+  fields:
+    - name: "Details"
+      value: "This username or IP can now join the server again"
+      inline: false
+  footer: "RelishAuth Admin"
+
+admin-unblock-not-found:
+  title: "❌ Not Found"
+  description: "No blocks found for **{identifier}**"
+  color: "#FEE75C"
+  footer: "RelishAuth Admin"
+
+admin-unblock-failed:
+  title: "❌ Unblock Failed"
+  description: "Failed to unblock: {error}"
+  color: "#ED4245"
+  footer: "RelishAuth Admin"
+
+# /info command (admin) - player lookup
+admin-player-info:
+  title: "📊 Player Information"
+  description: "Account details for **{username}**"
+  color: "#5865F2"
+  fields:
+    - name: "Minecraft"
+      value: "👤 **{username}**\n🆔 `{uuid}`"
+      inline: false
+    - name: "Discord"
+      value: "{discord_info}"
+      inline: false
+    - name: "Security"
+      value: "{password_status}\n{premium_status}"
+      inline: false
+    - name: "Session"
+      value: "⏱️ Duration: **{session_duration}**\n📍 Location: {location_check}"
+      inline: false
+    - name: "Activity"
+      value: "📅 Registered: <t:{first_join}:R>\n🔄 Last Login: <t:{last_login}:R>\n🌐 Last IP: ||`{last_ip}`||"
+      inline: false
+  footer: "RelishAuth Admin"
+
+# /unlink command (admin)
+admin-unlink-success:
+  title: "✅ Account Unlinked"
+  description: "Successfully unlinked **{username}**'s Discord account"
+  color: "#57F287"
+  fields:
+    - name: "Details"
+      value: "Player can now link a different Discord account"
+      inline: false
+  footer: "RelishAuth Admin"
+
+# Config reload success
+reload-success:
+  title: "✅ Configuration Reloaded"
+  description: "Plugin configuration has been reloaded successfully"
+  color: "#57F287"
+  fields:
+    - name: "Status"
+      value: "All settings updated"
+      inline: false
+  footer: "RelishAuth"
+
+# Password modal responses
+password-set-success:
+  title: "✅ Password Set Successfully"
+  description: "Your password has been set and saved securely"
+  color: "#57F287"
+  fields:
+    - name: "✨ What's Next?"
+      value: "You can now use password authentication in addition to Discord verification"
+      inline: false
+  footer: "RelishAuth Security"
+
+password-changed-success:
+  title: "✅ Password Changed"
+  description: "Your password has been updated successfully"
+  color: "#57F287"
+  fields:
+    - name: "Security"
+      value: "All existing sessions remain active"
+      inline: false
+  footer: "RelishAuth Security"

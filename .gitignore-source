@@ -1,0 +1,29 @@
+# Docs - not for source repo
+docs/
+
+# Build artifacts
+build/
+target/
+*.class
+*.jar
+*.zip
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Gradle
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Obfuscation
+allatori.jar
+allatori-*.xml
+obfuscate.bat
