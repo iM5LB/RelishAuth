@@ -1,11 +1,7 @@
-# Docs - not for source repo
-docs/
-
 # Build artifacts
 build/
 bin/
 target/
-temp_src_backup_*/
 *.class
 *.jar
 *.zip
@@ -17,15 +13,7 @@ temp_src_backup_*/
 
 # Gradle
 .gradle/
-gradle/
-gradlew
-gradlew.bat
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Obfuscation
-allatori.jar
-allatori-*.xml
-obfuscate.bat

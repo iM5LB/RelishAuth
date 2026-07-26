@@ -39,6 +39,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 import relish.relishAuthVelocity.RelishAuthVelocity;
+import relish.relishAuthVelocity.auth.AuthenticationManager;
 import relish.relishAuthVelocity.discord.DiscordMessageUtil;
 import relish.relishAuthVelocity.models.User;
 import relish.relishAuthVelocity.utils.ColorConfig;
@@ -68,7 +69,7 @@ extends ListenerAdapter {
         try {
             if (List.of("reload", "block", "unblock", "clearblocks", "resetpassword", "setpassword").contains(commandName)) {
                 if (!this.isAdmin(event)) {
-                    event.reply(this.messageUtil.getResponse("no-permission")).setEphemeral(true).queue();
+                    this.replyEphemeral(event, this.messageUtil.getResponse("no-permission"));
                     return;
                 }
                 this.handleAdminCommand(event, commandName);
@@ -78,7 +79,11 @@ extends ListenerAdapter {
         }
         catch (Exception e) {
             this.plugin.getLogger().error("[DISCORD-CMD] Error handling command {}: {}", commandName, e.getMessage(), e);
-            event.reply("\u274c An error occurred while processing your command.").setEphemeral(true).queue();
+            if (!event.isAcknowledged()) {
+                this.replyEphemeral(event, "\u274c An error occurred while processing your command.");
+            } else {
+                event.getHook().sendMessage("\u274c An error occurred while processing your command.").queue(null, failure -> {});
+            }
         }
     }
 
@@ -112,7 +117,9 @@ extends ListenerAdapter {
     }
 
     private void handlePassword(SlashCommandInteractionEvent event, String discordId) {
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -128,7 +135,9 @@ extends ListenerAdapter {
 
     private void handleNotifications(SlashCommandInteractionEvent event, String discordId) {
         OptionMapping optionValue = event.getOption("option");
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -167,7 +176,9 @@ extends ListenerAdapter {
     }
 
     private void handleLogout(SlashCommandInteractionEvent event, String discordId) {
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -190,7 +201,9 @@ extends ListenerAdapter {
 
     private void handleSession(SlashCommandInteractionEvent event, String discordId) {
         OptionMapping durationOption = event.getOption("duration");
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -247,7 +260,9 @@ extends ListenerAdapter {
 
     private void handleInfo(SlashCommandInteractionEvent event, String discordId) {
         OptionMapping playerOption = event.getOption("player");
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = playerOption == null ? this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId) : (this.isAdmin(event) ? this.resolveUser(playerOption.getAsString()) : this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId));
             if (user == null) {
@@ -284,22 +299,26 @@ extends ListenerAdapter {
     }
 
     private void handleUnlinkSelf(SlashCommandInteractionEvent event, String discordId) {
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
                 event.getHook().sendMessage(this.messageUtil.getResponse("no-account")).queue();
                 return;
             }
-            user.setDiscordId("unlinked_" + discordId);
-            user.setAccountType("UNLINKED");
-            this.plugin.getAuthService().getDatabase().updateUser(user);
-            this.plugin.getAuthService().getDatabase().clearAllSessions(discordId);
-            Optional playerOpt = this.plugin.getServer().getPlayer(user.getUuid());
-            if (playerOpt.isPresent()) {
+            this.plugin.getAuthService().unlinkDiscord(user.getUuid(), discordId);
+            if (this.plugin.getGroupSyncService() != null) {
+                Player online = this.findOnlinePlayerForAccount(user.getUuid());
+                UUID clearUuid = online != null ? online.getUniqueId() : user.getUuid();
+                this.plugin.getGroupSyncService().clearSyncedGroups(clearUuid, user.getUsername(), "discord self unlink");
+            }
+            Player toKick = this.findOnlinePlayerForAccount(user.getUuid());
+            if (toKick != null) {
                 this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
                     List<Component> kickMsg = this.plugin.getMessageManager().getMessageList("kick.account-unlinked", new String[0]);
-                    ((Player)playerOpt.get()).disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Account unlinked", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
+                    toKick.disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Account unlinked", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
                 }).delay(100L, TimeUnit.MILLISECONDS).schedule();
             }
             EmbedBuilder embed = new EmbedBuilder().setTitle("\u2705 Account Unlinked").setDescription("Your Discord account has been unlinked successfully.").setColor(ColorConfig.getGreen(this.plugin.getConfig())).addField("Status", "You can now link a different Discord account", false).setFooter("RelishAuth", null).setTimestamp(Instant.now());
@@ -308,7 +327,9 @@ extends ListenerAdapter {
     }
 
     private void handleUnlinkAdmin(SlashCommandInteractionEvent event, String targetPlayer) {
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.resolveUser(targetPlayer);
             if (user == null) {
@@ -316,20 +337,47 @@ extends ListenerAdapter {
                 return;
             }
             String oldDiscordId = user.getDiscordId();
-            user.setDiscordId(null);
-            user.setAccountType("UNLINKED");
-            this.plugin.getAuthService().getDatabase().updateUser(user);
-            this.plugin.getAuthService().getDatabase().clearAllSessions(oldDiscordId);
-            Optional playerOpt = this.plugin.getServer().getPlayer(user.getUuid());
-            if (playerOpt.isPresent()) {
+            this.plugin.getAuthService().getDatabase().unlinkDiscord(user.getUuid(), null);
+            if (oldDiscordId != null) {
+                this.plugin.getAuthService().getDatabase().clearAllSessions(oldDiscordId.startsWith("unlinked_")
+                        ? oldDiscordId.substring("unlinked_".length())
+                        : oldDiscordId);
+            }
+            if (this.plugin.getConfig().getBoolean("authentication.clear-password-on-discord-unlink", true)) {
+                this.plugin.getAuthService().getDatabase().clearPassword(user.getUuid());
+            }
+            if (this.plugin.getGroupSyncService() != null) {
+                Player online = this.findOnlinePlayerForAccount(user.getUuid());
+                UUID clearUuid = online != null ? online.getUniqueId() : user.getUuid();
+                this.plugin.getGroupSyncService().clearSyncedGroups(clearUuid, user.getUsername(), "discord admin unlink");
+            }
+            Player toKick = this.findOnlinePlayerForAccount(user.getUuid());
+            if (toKick != null) {
                 this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
                     List<Component> kickMsg = this.plugin.getMessageManager().getMessageList("kick.admin-unlink", new String[0]);
-                    ((Player)playerOpt.get()).disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Account unlinked by admin", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
+                    toKick.disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Account unlinked by admin", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
                 }).delay(100L, TimeUnit.MILLISECONDS).schedule();
             }
             EmbedBuilder embed = new EmbedBuilder().setTitle("\u2705 Account Unlinked").setDescription("Successfully unlinked **" + user.getUsername() + "**'s Discord account").setColor(ColorConfig.getGreen(this.plugin.getConfig())).addField("Details", "Player can now link a different Discord account", false).addField("Admin", event.getUser().getAsMention(), true).setFooter("RelishAuth Admin", null).setTimestamp(Instant.now());
             event.getHook().sendMessageEmbeds(embed.build(), new MessageEmbed[0]).queue();
         }).schedule();
+    }
+
+    private Player findOnlinePlayerForAccount(UUID accountUuid) {
+        if (accountUuid == null) {
+            return null;
+        }
+        Optional<Player> direct = this.plugin.getServer().getPlayer(accountUuid);
+        if (direct.isPresent()) {
+            return direct.get();
+        }
+        for (Player p : this.plugin.getServer().getAllPlayers()) {
+            User resolved = this.plugin.getAuthService().resolveUserForPlayer(p);
+            if (resolved != null && accountUuid.equals(resolved.getUuid())) {
+                return p;
+            }
+        }
+        return null;
     }
 
     private void handleAdminCommand(@NotNull SlashCommandInteractionEvent event, String commandName) {
@@ -367,7 +415,9 @@ extends ListenerAdapter {
             return;
         }
         String minecraftUsername = usernameOption.getAsString();
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         String tempPassword = RandomPasswordGenerator.generateDefault();
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             try {
@@ -416,7 +466,9 @@ extends ListenerAdapter {
             return;
         }
         String minecraftUsername = usernameOption.getAsString();
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             int cleared = this.plugin.getAuthManager().clearAllBlocksForUsername(minecraftUsername);
             EmbedBuilder embed = new EmbedBuilder().setTitle("\ud83e\uddf9 Cleared Username Blocks").setDescription("Cleared **" + cleared + "** block(s) for this username").setColor(ColorConfig.getGreen(this.plugin.getConfig())).addField("Minecraft Username", "`" + minecraftUsername + "`", true).addField("Cleared By", event.getUser().getAsMention(), true).setFooter("RelishAuth Admin", null).setTimestamp(Instant.now());
@@ -425,7 +477,9 @@ extends ListenerAdapter {
     }
 
     private void handleReload(SlashCommandInteractionEvent event) {
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             try {
                 boolean success = this.plugin.reloadConfig();
@@ -458,7 +512,9 @@ extends ListenerAdapter {
             return;
         }
         String fromInput = fromOption.getAsString();
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             String targetIp;
             String ipAddress = this.resolveIpAddress(fromInput);
@@ -490,7 +546,9 @@ extends ListenerAdapter {
             return;
         }
         String fromInput = fromOption.getAsString();
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             String ipAddress = this.resolveIpAddress(fromInput);
             if (ipAddress == null) {
@@ -541,7 +599,9 @@ extends ListenerAdapter {
             event.reply(this.messageUtil.getResponse("passwords-mismatch")).setEphemeral(true).queue();
             return;
         }
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -592,7 +652,9 @@ extends ListenerAdapter {
             event.reply(this.messageUtil.getResponse("passwords-mismatch")).setEphemeral(true).queue();
             return;
         }
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             try {
                 User user = this.plugin.getAuthService().getDatabase().getUserByUsername(minecraftUsername);
@@ -628,8 +690,18 @@ extends ListenerAdapter {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String buttonId = event.getComponentId();
+        // DiscordBot also listens; only acknowledge buttons owned by slash-command UIs.
+        if (!this.isOwnedButton(buttonId)) {
+            return;
+        }
         if (this.isButtonExpired(event)) {
-            event.reply(this.messageUtil.getResponse("button-expired")).setEphemeral(true).queue(success -> event.getMessage().editMessageComponents(new LayoutComponent[0]).queue());
+            if (!event.isAcknowledged()) {
+                event.reply(this.messageUtil.getResponse("button-expired")).setEphemeral(true)
+                        .queue(success -> event.getMessage().editMessageComponents(new LayoutComponent[0]).queue(),
+                                failure -> event.getMessage().editMessageComponents(new LayoutComponent[0]).queue());
+            } else {
+                event.getMessage().editMessageComponents(new LayoutComponent[0]).queue();
+            }
             return;
         }
         try {
@@ -643,8 +715,17 @@ extends ListenerAdapter {
         }
         catch (Exception e) {
             this.plugin.getLogger().error("[DISCORD-BTN] Error handling button {}: {}", buttonId, e.getMessage(), e);
-            event.reply("\u274c An error occurred.").setEphemeral(true).queue();
+            if (!event.isAcknowledged()) {
+                event.reply("\u274c An error occurred.").setEphemeral(true).queue();
+            }
         }
+    }
+
+    private boolean isOwnedButton(String buttonId) {
+        return buttonId.startsWith("password_modal:")
+                || buttonId.startsWith("notify_enable:")
+                || buttonId.startsWith("notify_disable:")
+                || buttonId.startsWith("setduration:");
     }
 
     private void handlePasswordModal(ButtonInteractionEvent event, String buttonId) {
@@ -666,7 +747,9 @@ extends ListenerAdapter {
             event.reply(this.messageUtil.getResponse("not-your-button")).setEphemeral(true).queue();
             return;
         }
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -704,7 +787,9 @@ extends ListenerAdapter {
             event.reply(this.messageUtil.getResponse("invalid-session")).setEphemeral(true).queue();
             return;
         }
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getUser(uuid);
             if (user == null) {
@@ -728,6 +813,37 @@ extends ListenerAdapter {
         OffsetDateTime messageTime = event.getMessage().getTimeCreated();
         long minutesOld = Duration.between(messageTime, now = OffsetDateTime.now()).toMinutes();
         return minutesOld >= (long)(expirationMinutes = this.plugin.getConfig().getInt("discord.button-expiration-minutes", 5));
+    }
+
+    /**
+     * Acknowledge within Discord's 3s window using a blocking complete() so the ack is not
+     * delayed behind other RestActions (DMs, member loads) in the rate limiter queue.
+     */
+    private boolean deferEphemeral(net.dv8tion.jda.api.interactions.callbacks.IReplyCallback event) {
+        if (event.isAcknowledged()) {
+            return true;
+        }
+        try {
+            event.deferReply(true).complete();
+            return true;
+        }
+        catch (Exception e) {
+            this.plugin.getLogger().warn("[DISCORD] Failed to acknowledge interaction (expired or duplicate bot process?): {}", e.getMessage());
+            return false;
+        }
+    }
+
+    private void replyEphemeral(net.dv8tion.jda.api.interactions.callbacks.IReplyCallback event, String message) {
+        if (event.isAcknowledged()) {
+            event.getHook().sendMessage(message).queue(null, failure -> {});
+            return;
+        }
+        try {
+            event.reply(message).setEphemeral(true).complete();
+        }
+        catch (Exception e) {
+            this.plugin.getLogger().warn("[DISCORD] Failed to reply to interaction: {}", e.getMessage());
+        }
     }
 
     private boolean isAdmin(SlashCommandInteractionEvent event) {
@@ -761,11 +877,27 @@ extends ListenerAdapter {
         if ((input = input.replaceAll("[<@!>]", "")).matches("\\d{17,19}")) {
             return this.plugin.getAuthService().getDatabase().getUserByDiscordId(input);
         }
-        Optional player = this.plugin.getServer().getPlayer(input);
-        if (player.isPresent()) {
-            return this.plugin.getAuthService().getUser(((Player)player.get()).getUniqueId());
+        Optional<Player> player = this.plugin.getServer().getPlayer(input);
+        if (player.isEmpty()) {
+            String stripped = AuthenticationManager.stripFloodgatePrefix(input);
+            if (!stripped.equals(input)) {
+                player = this.plugin.getServer().getPlayer(stripped);
+            } else {
+                player = this.plugin.getServer().getPlayer("." + input);
+            }
         }
-        return this.plugin.getAuthService().getUserByUsername(input);
+        if (player.isPresent()) {
+            return this.plugin.getAuthService().resolveUserForPlayer(player.get());
+        }
+        User user = this.plugin.getAuthService().getUserByUsername(input);
+        if (user != null) {
+            return user;
+        }
+        String stripped = AuthenticationManager.stripFloodgatePrefix(input);
+        if (!stripped.equals(input)) {
+            return this.plugin.getAuthService().getUserByUsername(stripped);
+        }
+        return this.plugin.getAuthService().getUserByUsername("." + input);
     }
 
     private String formatDuration(String duration) {

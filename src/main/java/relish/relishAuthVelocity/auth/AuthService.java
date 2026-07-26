@@ -20,6 +20,7 @@ import relish.relishAuthVelocity.services.SkinFetchService;
 import relish.relishAuthVelocity.services.SkinFileStorage;
 import relish.relishAuthVelocity.utils.DurationUtil;
 import relish.relishAuthVelocity.utils.PasswordHasher;
+import relish.relishAuthVelocity.utils.ValidationUtil;
 
 public class AuthService {
     private final RelishAuthVelocity plugin;
@@ -183,7 +184,15 @@ public class AuthService {
                     return AuthResult.notRegistered();
                 }
                 if (user.getPassword() == null || user.getPassword().isEmpty()) {
-                    return AuthResult.success();
+                    // Premium/Discord-only accounts have no password — do not treat empty password as success.
+                    this.incrementPasswordAttempts(uuid);
+                    int attempts = this.passwordAttempts.getOrDefault(uuid, 0);
+                    int maxAttempts = this.config.getInt("security.password-attempts.max-attempts", 3);
+                    if (attempts >= maxAttempts) {
+                        this.lockoutPlayer(uuid);
+                        return AuthResult.lockedOut(this.getRemainingLockoutTime(uuid));
+                    }
+                    return AuthResult.wrongPassword(maxAttempts - attempts);
                 }
                 if (!PasswordHasher.verify(password, user.getPassword())) {
                     this.incrementPasswordAttempts(uuid);
@@ -262,6 +271,72 @@ public class AuthService {
         }
     }
 
+    /**
+     * Resolves the RelishAuth user for an online player, including Floodgate "." usernames / UUID mismatches.
+     */
+    public User resolveUserForPlayer(com.velocitypowered.api.proxy.Player player) {
+        if (player == null) {
+            return null;
+        }
+        return this.resolveUser(player.getUniqueId(), player.getUsername());
+    }
+
+    public User resolveUser(UUID connectionUuid, String username) {
+        if (this.plugin.getAuthManager() != null) {
+            UUID accountUuid = this.plugin.getAuthManager().resolveAccountUuid(connectionUuid, username);
+            User user = this.getUser(accountUuid);
+            if (user != null) {
+                return user;
+            }
+        }
+        User user = this.getUser(connectionUuid);
+        if (user != null) {
+            return user;
+        }
+        if (username == null || username.isBlank()) {
+            return null;
+        }
+        user = this.getUserByUsername(username);
+        if (user != null) {
+            return user;
+        }
+        String stripped = AuthenticationManager.stripFloodgatePrefix(username);
+        if (!stripped.equals(username)) {
+            user = this.getUserByUsername(stripped);
+            if (user != null) {
+                return user;
+            }
+        } else {
+            user = this.getUserByUsername("." + username);
+            if (user != null) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public void unlinkDiscord(UUID accountUuid, String currentDiscordId) {
+        Objects.requireNonNull(accountUuid, "UUID cannot be null");
+        Objects.requireNonNull(currentDiscordId, "Discord ID cannot be null");
+        String rawId = currentDiscordId.startsWith("unlinked_")
+                ? currentDiscordId.substring("unlinked_".length())
+                : currentDiscordId;
+        // Already unlinked on this account — treat as success.
+        if (currentDiscordId.startsWith("unlinked_")) {
+            this.database.clearAllSessions(rawId);
+            if (this.config.getBoolean("authentication.clear-password-on-discord-unlink", true)) {
+                this.database.clearPassword(accountUuid);
+            }
+            return;
+        }
+        String marked = "unlinked_" + rawId;
+        this.database.unlinkDiscord(accountUuid, marked);
+        this.database.clearAllSessions(rawId);
+        if (this.config.getBoolean("authentication.clear-password-on-discord-unlink", true)) {
+            this.database.clearPassword(accountUuid);
+        }
+    }
+
     public boolean isRegistered(UUID uuid) {
         if (uuid == null) {
             return false;
@@ -273,6 +348,30 @@ public class AuthService {
             this.plugin.getLogger().error("[AUTH] Database error checking registration for {}: {}", (Object)uuid, (Object)e.getMessage());
             return false;
         }
+    }
+
+    public boolean hasPassword(UUID uuid) {
+        User user = this.getUser(uuid);
+        return user != null && user.getPassword() != null && !user.getPassword().isEmpty();
+    }
+
+    /**
+     * Sets or replaces the account password hash. Returns false if the user does not exist.
+     */
+    public boolean setPassword(UUID uuid, String plainPassword) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        Objects.requireNonNull(plainPassword, "Password cannot be null");
+        User user = this.getUser(uuid);
+        if (user == null) {
+            return false;
+        }
+        user.setPassword(PasswordHasher.hash(plainPassword, this.config.getString("authentication.password.hashing", "argon2"), this.config));
+        this.database.updateUser(user);
+        return true;
+    }
+
+    public boolean hasDiscordLinked(UUID uuid) {
+        return ValidationUtil.isRealDiscordId(this.getDiscordId(uuid));
     }
 
     public String getDiscordId(UUID uuid) {

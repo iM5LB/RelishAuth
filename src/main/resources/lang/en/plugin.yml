@@ -29,6 +29,16 @@ first-join: "<#87CEEB>✔ <#F0F0F0>Welcome to <#87CEEB>{server}<#F0F0F0>, <#87CE
 limbo:
   title: "<#1E90FF>RELISH <#87CEEB>Auth"
   subtitle: "<#A0A0A0>Please authenticate to continue"
+  discord-verify-title: "<#87CEEB>Check Discord"
+  discord-verify-subtitle: "<#A0A0A0>Open Discord and tap Verify in your DMs"
+  discord-link-title: "<#87CEEB>Link Discord"
+  discord-link-subtitle: "<#A0A0A0>Type your Discord username in chat"
+  password-login-title: "<#87CEEB>Login"
+  password-login-subtitle: "<#A0A0A0>Type your password in chat"
+  password-register-title: "<#87CEEB>Register"
+  password-register-subtitle: "<#A0A0A0>Type a new password in chat"
+  chooser-title: "<#87CEEB>Choose Login"
+  chooser-subtitle: "<#A0A0A0>Type password or discord in chat"
   actionbar: "<#1E90FF>💙 <#A0A0A0>Authentication timeout: <#87CEEB>{time}s"
   bossbar: "<#1E90FF>💙 <#A0A0A0>Authentication timeout: <#87CEEB>{time}s"
 
@@ -98,6 +108,34 @@ auth:
       - ""
     success: "<#87CEEB>✔ <#F0F0F0>Registration successful!"
     already-registered: "<#FF6B6B>✗ <#A0A0A0>You are already registered!"
+
+  set-password-tip:
+    - ""
+    - "<#FFA500>💡 <#A0A0A0>Tip: Set a password for faster login next time"
+    - "<#808080>Use <#87CEEB>/ra password <new> <confirm> <#808080>or the Set Password button in Discord"
+    - ""
+
+  chooser:
+    header:
+      - ""
+      - "<#1E90FF>💙 <#87CEEB>Choose how to login to {server}"
+      - ""
+    password-button: "Password"
+    discord-button: "Discord"
+    password-hover: "Login with your password"
+    discord-hover: "Login with Discord verification"
+    hint:
+      - ""
+      - "<#A0A0A0>Click a button above to continue"
+      - ""
+    bedrock-hint:
+      - ""
+      - "<#87CEEB>▶ <#A0A0A0>Type <#87CEEB>password <#A0A0A0>or <#87CEEB>discord <#A0A0A0>in chat"
+      - "<#808080>You can also type 1 or 2"
+      - ""
+    invalid: "<#FF6B6B>✖ <#A0A0A0>Type <#87CEEB>password <#A0A0A0>or <#87CEEB>discord"
+    selected-password: "<#87CEEB>✔ <#A0A0A0>Selected: <#87CEEB>Password"
+    selected-discord: "<#87CEEB>✔ <#A0A0A0>Selected: <#87CEEB>Discord"
 
 password-validation-failed: "<#FF6B6B>✗ <#A0A0A0>{message}"
 
@@ -276,12 +314,18 @@ cmd-admin-resetpassword-usage: "<#87CEEB>▶ <#A0A0A0>Usage: <#87CEEB>/ra resetp
 cmd-admin-resetpassword-success: "<#87CEEB>✔ <#A0A0A0>Reset password for <#87CEEB>{player}<#A0A0A0>. Temporary password: <#87CEEB>{password}"
 cmd-admin-resetpassword-failed: "<#FF6B6B>✖ <#A0A0A0>Failed to reset password: {error}"
 
+cmd-syncgroups-disabled: "<#FF6B6B>✖ <#A0A0A0>Group sync is disabled."
+cmd-syncgroups-player-not-found: "<#FF6B6B>✖ <#A0A0A0>Player not found or not online."
+cmd-syncgroups-queued: "<#87CEEB>✔ <#A0A0A0>Group sync queued for <#87CEEB>{player}<#A0A0A0>."
+
+hybrid-discord-required: "<#87CEEB>✔ <#A0A0A0>Password accepted. <#87CEEB>Hybrid mode <#A0A0A0>also requires Discord linking."
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # UNLINK MESSAGES
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 unlink-not-linked: "<#FF6B6B>✖ <#A0A0A0>Your account is not linked!"
-unlink-cannot-unlink-special: "<#FF6B6B>✖ <#A0A0A0>You cannot unlink a password-only or premium account!"
+unlink-success: "<#87CEEB>✔ <#A0A0A0>Your Discord account has been unlinked"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # INFO COMMAND MESSAGES
@@ -309,6 +353,7 @@ help-discord: "<#87CEEB>/ra discord <username> <#A0A0A0>Link Discord"
 help-unlink: "<#87CEEB>/ra unlink <#A0A0A0>Unlink Discord account"
 help-notify: "<#87CEEB>/ra notify <on/off> <#A0A0A0>Toggle notifications"
 help-session: "<#87CEEB>/ra session [duration] <#A0A0A0>Set session duration"
+help-syncgroups: "<#87CEEB>/ra syncgroups [player] <#A0A0A0>Sync Discord roles to Minecraft groups"
 help-admin: "<#87CEEB>Admin"
 help-reload: "<#87CEEB>/ra reload <#A0A0A0>Reload config"
 help-info: "<#87CEEB>/ra info <#A0A0A0>Plugin info"

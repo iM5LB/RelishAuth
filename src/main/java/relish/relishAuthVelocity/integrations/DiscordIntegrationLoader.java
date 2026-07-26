@@ -18,7 +18,8 @@ public final class DiscordIntegrationLoader {
         if (plugin == null || config == null || logger == null) {
             return noop;
         }
-        boolean required = "discord".equalsIgnoreCase(config.getString("authentication.method", "password"));
+        String method = config.getString("authentication.method", "password");
+        boolean required = "discord".equalsIgnoreCase(method) || "hybrid".equalsIgnoreCase(method);
         boolean configured = DiscordIntegrationLoader.isDiscordTokenConfigured(config);
         if (!required && !configured) {
             return noop;
@@ -36,7 +37,7 @@ public final class DiscordIntegrationLoader {
         }
         catch (ClassNotFoundException e) {
             if (required) {
-                throw new IllegalStateException("authentication.method=discord but this RelishAuth build does not include Discord support. Use the full jar build.", e);
+                throw new IllegalStateException("authentication.method=" + method + " but this RelishAuth build does not include Discord support. Use the full jar build.", e);
             }
             logger.info("[DISCORD] Discord support not bundled in this build, skipping Discord init");
             return noop;

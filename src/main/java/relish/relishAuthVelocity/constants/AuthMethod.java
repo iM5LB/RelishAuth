@@ -2,7 +2,8 @@ package relish.relishAuthVelocity.constants;
 
 public enum AuthMethod {
     PASSWORD("password"),
-    DISCORD("discord");
+    DISCORD("discord"),
+    HYBRID("hybrid");
 
     private final String value;
 
@@ -19,12 +20,22 @@ public enum AuthMethod {
             return PASSWORD;
         }
         for (AuthMethod method : AuthMethod.values()) {
-            if (!method.value.equalsIgnoreCase(value)) continue;
-            return method;
+            if (method.value.equalsIgnoreCase(value)) {
+                return method;
+            }
         }
         return PASSWORD;
     }
 
+    public boolean requiresDiscord() {
+        return this == DISCORD || this == HYBRID;
+    }
+
+    public boolean requiresPassword() {
+        return this == PASSWORD || this == HYBRID;
+    }
+
+    @Override
     public String toString() {
         return this.value;
     }

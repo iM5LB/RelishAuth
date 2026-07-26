@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -255,8 +256,14 @@ implements DiscordIntegration {
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
         String buttonId = event.getComponentId();
+        // DiscordCommands also listens for buttons; only acknowledge interactions we own.
+        if (!this.isOwnedButton(buttonId)) {
+            return;
+        }
         if (this.isButtonExpired(event)) {
-            event.reply(this.messageUtil.getResponse("button-expired")).setEphemeral(true).queue();
+            if (!event.isAcknowledged()) {
+                event.reply(this.messageUtil.getResponse("button-expired")).setEphemeral(true).queue();
+            }
             event.getMessage().editMessageComponents(new LayoutComponent[0]).queue();
             return;
         }
@@ -268,8 +275,6 @@ implements DiscordIntegration {
             this.handleKickSelfButton(event, buttonId);
         } else if (buttonId.startsWith("duration:")) {
             this.handleDurationButton(event, buttonId);
-        } else if (buttonId.startsWith("setduration:")) {
-            this.handleSetDurationButton(event, buttonId);
         } else if (buttonId.startsWith("unlink:")) {
             this.handleUnlinkButton(event, buttonId);
         } else if (buttonId.startsWith("confirm_unlink:")) {
@@ -283,6 +288,19 @@ implements DiscordIntegration {
         } else if (buttonId.startsWith("toggle_notifications:")) {
             this.handleToggleNotificationsButton(event, buttonId);
         }
+    }
+
+    private boolean isOwnedButton(String buttonId) {
+        return buttonId.startsWith("verify:")
+                || buttonId.startsWith("deny:")
+                || buttonId.startsWith("kickself:")
+                || buttonId.startsWith("duration:")
+                || buttonId.startsWith("unlink:")
+                || buttonId.startsWith("confirm_unlink:")
+                || buttonId.startsWith("deny_unlink:")
+                || buttonId.startsWith("deny_join:")
+                || buttonId.startsWith("set_password:")
+                || buttonId.startsWith("toggle_notifications:");
     }
 
     private boolean isButtonExpired(@NotNull ButtonInteractionEvent event) {
@@ -330,7 +348,9 @@ implements DiscordIntegration {
                 return;
             }
         }
-        event.deferReply(false).queue();
+        if (!this.deferReply(event, false)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             try {
                 this.plugin.debug("[DISCORD] Completing Discord verification for UUID: {}", playerUuid);
@@ -389,12 +409,15 @@ implements DiscordIntegration {
             return;
         }
         String discordId = event.getUser().getId();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             String username = this.plugin.getServer().getPlayer(playerUuid).map(p -> p.getUsername()).orElse(null);
             UUID accountUuid = this.plugin.getAuthManager().resolveAccountUuid(playerUuid, username);
             User user = this.plugin.getAuthService().getUser(accountUuid);
             if (user == null || !discordId.equals(user.getDiscordId())) {
-                event.reply(this.messageUtil.getResponse("not-your-button")).setEphemeral(true).queue();
+                event.getHook().sendMessage(this.messageUtil.getResponse("not-your-button")).queue();
                 return;
             }
             this.plugin.getAuthService().getDatabase().clearAllSessions(discordId);
@@ -404,7 +427,7 @@ implements DiscordIntegration {
                 player.disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Logged out", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
             }
             MessageEmbed embed = this.messageUtil.buildLogoutEmbed();
-            event.replyEmbeds(embed, new MessageEmbed[0]).setEphemeral(true).queue();
+            event.getHook().sendMessageEmbeds(embed, new MessageEmbed[0]).queue();
             event.getMessage().editMessageComponents(new LayoutComponent[0]).queue();
         }).schedule();
     }
@@ -424,26 +447,6 @@ implements DiscordIntegration {
         Button min30 = Button.secondary("setduration:" + sessionId + ":30m", "30m");
         Button hour1 = Button.primary("setduration:" + sessionId + ":1h", "1h").withEmoji(Emoji.fromUnicode(EmojiConfig.getHourGlass(this.config)));
         ((ReplyCallbackAction)event.replyEmbeds(embed, new MessageEmbed[0]).addActionRow(noSave, min5, min15, min30, hour1)).setEphemeral(true).queue();
-    }
-
-    private void handleSetDurationButton(ButtonInteractionEvent event, String buttonId) {
-        String[] parts = buttonId.split(":");
-        if (parts.length != 3) {
-            event.reply(this.messageUtil.getResponse("invalid-request")).setEphemeral(true).queue();
-            return;
-        }
-        String sessionId = parts[1];
-        String durationKey = parts[2];
-        try {
-            UUID.fromString(sessionId);
-        }
-        catch (IllegalArgumentException e) {
-            event.reply(this.messageUtil.getResponse("invalid-session")).setEphemeral(true).queue();
-            return;
-        }
-        event.getUser().getId();
-        MessageEmbed embed = this.messageUtil.buildDurationUpdatedEmbed(durationKey);
-        event.replyEmbeds(embed, new MessageEmbed[0]).setEphemeral(true).queue();
     }
 
     private void handleUnlinkButton(ButtonInteractionEvent event, String buttonId) {
@@ -493,7 +496,9 @@ implements DiscordIntegration {
             event.reply(this.messageUtil.getResponse("not-your-button")).setEphemeral(true).queue();
             return;
         }
-        event.deferReply(true).queue();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
@@ -543,12 +548,15 @@ implements DiscordIntegration {
             return;
         }
         String discordId = event.getUser().getId();
+        if (!this.deferEphemeral(event)) {
+            return;
+        }
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             String username = this.plugin.getServer().getPlayer(playerUuid).map(p -> p.getUsername()).orElse(null);
             UUID accountUuid = this.plugin.getAuthManager().resolveAccountUuid(playerUuid, username);
             User user = this.plugin.getAuthService().getUser(accountUuid);
             if (user == null || !discordId.equals(user.getDiscordId())) {
-                event.reply(this.messageUtil.getResponse("not-your-button")).setEphemeral(true).queue();
+                event.getHook().sendMessage(this.messageUtil.getResponse("not-your-button")).queue();
                 return;
             }
             this.plugin.getAuthService().getDatabase().clearAllSessions(discordId);
@@ -560,7 +568,7 @@ implements DiscordIntegration {
                 wasOnline = true;
             }
             MessageEmbed embed = this.messageUtil.buildSessionsClearedEmbed(wasOnline);
-            event.replyEmbeds(embed, new MessageEmbed[0]).setEphemeral(true).queue();
+            event.getHook().sendMessageEmbeds(embed, new MessageEmbed[0]).queue();
             event.getMessage().editMessageComponents(new LayoutComponent[0]).queue();
         }).schedule();
     }
@@ -590,30 +598,68 @@ implements DiscordIntegration {
     @Override
     public CompletableFuture<Set<String>> getRoleIds(String discordId) {
         if (!this.enabled || this.jda == null || discordId == null || discordId.isBlank()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
+            return CompletableFuture.failedFuture(new IllegalStateException("Discord bot is not available for role lookup"));
         }
-        ArrayList<CompletableFuture<Set<String>>> lookups = new ArrayList<CompletableFuture<Set<String>>>();
+        ArrayList<CompletableFuture<RoleLookupResult>> lookups = new ArrayList<>();
         for (String guildId : this.getConfiguredGuildIds()) {
             Guild guild;
-            if (guildId == null || guildId.isBlank() || (guild = this.jda.getGuildById(guildId)) == null) continue;
-            CompletableFuture<Set<String>> lookup = guild.retrieveMemberById(discordId).timeout(this.config.getInt("discord.api.request-timeout", 10), TimeUnit.SECONDS).submit().thenApply(member -> {
-                Set<String> roleIds = new HashSet<String>();
-                member.getRoles().forEach(role -> roleIds.add(role.getId()));
-                return roleIds;
-            }).exceptionally(error -> Collections.emptySet());
+            if (guildId == null || guildId.isBlank() || (guild = this.jda.getGuildById(guildId)) == null) {
+                continue;
+            }
+            CompletableFuture<RoleLookupResult> lookup = guild.retrieveMemberById(discordId)
+                    .timeout(this.config.getInt("discord.api.request-timeout", 10), TimeUnit.SECONDS)
+                    .submit()
+                    .thenApply(member -> {
+                        Set<String> roleIds = new HashSet<>();
+                        member.getRoles().forEach(role -> roleIds.add(role.getId()));
+                        return RoleLookupResult.success(roleIds);
+                    })
+                    .exceptionally(error -> RoleLookupResult.failure(error));
             lookups.add(lookup);
         }
         if (lookups.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
+            return CompletableFuture.failedFuture(new IllegalStateException("No configured Discord guilds are available for role lookup"));
         }
-        CompletableFuture<Void> all = CompletableFuture.allOf(lookups.toArray(new CompletableFuture[0]));
-        return all.thenApply(ignored -> {
-            HashSet<String> roleIds = new HashSet<String>();
-            for (CompletableFuture<Set<String>> lookup : lookups) {
-                roleIds.addAll(lookup.join());
+        return CompletableFuture.allOf(lookups.toArray(new CompletableFuture[0])).thenApply(ignored -> {
+            HashSet<String> roleIds = new HashSet<>();
+            boolean anySuccess = false;
+            Throwable lastError = null;
+            for (CompletableFuture<RoleLookupResult> lookup : lookups) {
+                RoleLookupResult result = lookup.join();
+                if (result.success) {
+                    anySuccess = true;
+                    roleIds.addAll(result.roleIds);
+                } else if (result.error != null) {
+                    lastError = result.error;
+                }
+            }
+            if (!anySuccess) {
+                throw new CompletionException(lastError != null
+                        ? lastError
+                        : new IllegalStateException("Discord role lookup failed for all configured guilds"));
             }
             return roleIds;
         });
+    }
+
+    private static final class RoleLookupResult {
+        private final boolean success;
+        private final Set<String> roleIds;
+        private final Throwable error;
+
+        private RoleLookupResult(boolean success, Set<String> roleIds, Throwable error) {
+            this.success = success;
+            this.roleIds = roleIds;
+            this.error = error;
+        }
+
+        static RoleLookupResult success(Set<String> roleIds) {
+            return new RoleLookupResult(true, roleIds != null ? roleIds : Collections.emptySet(), null);
+        }
+
+        static RoleLookupResult failure(Throwable error) {
+            return new RoleLookupResult(false, Collections.emptySet(), error);
+        }
     }
 
     private void updateBotStatus() {
@@ -670,15 +716,23 @@ implements DiscordIntegration {
             return;
         }
         this.plugin.debug("[DISCORD] Member left Discord server: {} - checking for linked accounts", event.getUser().getAsTag());
-        String authMethod = this.config.getString("authentication.method", "password");
-        if (!authMethod.equalsIgnoreCase("discord")) {
-            this.plugin.debug("[DISCORD] Auth method is not Discord, ignoring member leave", new Object[0]);
-            return;
-        }
         try {
             User user = this.plugin.getAuthService().getDatabase().getUserByDiscordId(discordId);
             if (user == null) {
                 this.plugin.debug("[DISCORD] No linked account found for {}", event.getUser().getAsTag());
+                return;
+            }
+            if (this.plugin.getGroupSyncService() != null) {
+                UUID clearUuid = user.getUuid();
+                Player online = this.plugin.getServer().getPlayer(user.getUuid()).orElse(null);
+                if (online != null) {
+                    clearUuid = online.getUniqueId();
+                }
+                this.plugin.getGroupSyncService().clearSyncedGroups(clearUuid, user.getUsername(), "discord member leave");
+            }
+            String authMethod = this.config.getString("authentication.method", "password");
+            if (!authMethod.equalsIgnoreCase("discord") && !authMethod.equalsIgnoreCase("hybrid")) {
+                this.plugin.debug("[DISCORD] Auth method does not require Discord unlink on leave; groups cleared if configured");
                 return;
             }
             user.setDiscordId("unlinked_" + discordId);
@@ -718,6 +772,28 @@ implements DiscordIntegration {
             catch (Exception e) {
                 this.logger.warn("[DISCORD] Error during JDA shutdown", e);
             }
+            finally {
+                this.jda = null;
+                this.enabled = false;
+            }
+        }
+    }
+
+    private boolean deferEphemeral(net.dv8tion.jda.api.interactions.callbacks.IReplyCallback event) {
+        return this.deferReply(event, true);
+    }
+
+    private boolean deferReply(net.dv8tion.jda.api.interactions.callbacks.IReplyCallback event, boolean ephemeral) {
+        if (event.isAcknowledged()) {
+            return true;
+        }
+        try {
+            event.deferReply(ephemeral).complete();
+            return true;
+        }
+        catch (Exception e) {
+            this.logger.warn("[DISCORD] Failed to acknowledge interaction (expired or duplicate bot process?): {}", (Object)e.getMessage());
+            return false;
         }
     }
 

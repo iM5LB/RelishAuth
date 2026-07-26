@@ -19,7 +19,9 @@ import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.event.HoverEventSource;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
+import relish.relishAuthVelocity.BuildConstants;
 import relish.relishAuthVelocity.RelishAuthVelocity;
+import relish.relishAuthVelocity.auth.AuthenticationManager;
 import relish.relishAuthVelocity.exceptions.DatabaseException;
 import relish.relishAuthVelocity.exceptions.PluginException;
 import relish.relishAuthVelocity.integrations.DiscordUserSearchResult;
@@ -370,42 +372,92 @@ implements SimpleCommand {
         if (!this.checkAuthenticated(player)) {
             return;
         }
-        User user = this.plugin.getAuthService().getUser(player.getUniqueId());
+        User user = this.plugin.getAuthService().resolveUserForPlayer(player);
         if (user == null || !this.isRealDiscordId(user.getDiscordId())) {
             player.sendMessage(this.msg("unlink-not-linked"));
             return;
         }
-        player.sendMessage(this.msg("unlink-cannot-unlink-special"));
+        this.unlinkPlayerSelf(player, user);
+    }
+
+    private void unlinkPlayerSelf(Player player, User user) {
+        this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
+            try {
+                String discordId = user.getDiscordId();
+                this.plugin.getAuthService().unlinkDiscord(user.getUuid(), discordId);
+                try {
+                    if (this.plugin.getGroupSyncService() != null) {
+                        this.plugin.getGroupSyncService().clearSyncedGroups(player.getUniqueId(), player.getUsername(), "self unlink");
+                    }
+                } catch (Exception groupErr) {
+                    this.plugin.getLogger().warn("[AUTH] Group clear after unlink failed for {}: {}", player.getUsername(), groupErr.getMessage());
+                }
+                player.sendMessage(this.msg("unlink-success"));
+                this.plugin.getLogger().info("[AUTH] {} unlinked Discord account {}", (Object)player.getUsername(), (Object)discordId);
+                this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
+                    List<Component> kickMsg = this.getMessageManager().getMessageList("kick.account-unlinked", new String[0]);
+                    player.disconnect((Component)(kickMsg.isEmpty()
+                            ? Component.text((String)"Account unlinked", (TextColor)NamedTextColor.YELLOW)
+                            : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
+                }).delay(100L, TimeUnit.MILLISECONDS).schedule();
+            }
+            catch (Exception e) {
+                this.plugin.getLogger().error("[AUTH] Error unlinking Discord for {}: {}", player.getUsername(), e.getMessage(), e);
+                player.sendMessage(this.msg("error-unlink-player"));
+            }
+        }).schedule();
     }
 
     private void unlinkPlayerAdmin(Player sender, String targetName) {
         this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
             try {
-                User user;
-                UUID uuid = null;
+                User user = null;
+                Player online = null;
+                String lookup = targetName;
                 for (Player p : this.plugin.getServer().getAllPlayers()) {
-                    if (!p.getUsername().equalsIgnoreCase(targetName)) continue;
-                    uuid = p.getUniqueId();
+                    if (!p.getUsername().equalsIgnoreCase(targetName)
+                            && !AuthenticationManager.stripFloodgatePrefix(p.getUsername()).equalsIgnoreCase(targetName)
+                            && !(p.getUsername().startsWith(".") && p.getUsername().substring(1).equalsIgnoreCase(targetName))) {
+                        continue;
+                    }
+                    online = p;
+                    user = this.plugin.getAuthService().resolveUserForPlayer(p);
                     break;
                 }
-                if (uuid == null && (user = this.plugin.getAuthService().getDatabase().getUserByUsername(targetName)) != null) {
-                    uuid = user.getUuid();
+                if (user == null) {
+                    user = this.plugin.getAuthService().getUserByUsername(lookup);
                 }
-                if (uuid == null) {
+                if (user == null) {
+                    String stripped = AuthenticationManager.stripFloodgatePrefix(lookup);
+                    if (!stripped.equals(lookup)) {
+                        user = this.plugin.getAuthService().getUserByUsername(stripped);
+                    } else {
+                        user = this.plugin.getAuthService().getUserByUsername("." + lookup);
+                    }
+                }
+                if (user == null) {
                     sender.sendMessage(this.getMessageManager().getMessage("cmd-player-not-found", "{player}", targetName));
                     return;
                 }
-                user = this.plugin.getAuthService().getUser(uuid);
-                if (user == null || !this.isRealDiscordId(user.getDiscordId())) {
+                if (!this.isRealDiscordId(user.getDiscordId())) {
                     sender.sendMessage(this.msg("cmd-player-not-linked"));
                     return;
                 }
                 String discordId = user.getDiscordId();
-                user.setDiscordId(null);
-                user.setAccountType("UNLINKED");
-                this.plugin.getAuthService().getDatabase().updateUser(user);
+                this.plugin.getAuthService().getDatabase().unlinkDiscord(user.getUuid(), null);
                 this.plugin.getAuthService().getDatabase().clearAllSessions(discordId);
-                Player target = this.plugin.getServer().getPlayer(uuid).orElse(null);
+                if (this.plugin.getConfig().getBoolean("authentication.clear-password-on-discord-unlink", true)) {
+                    this.plugin.getAuthService().getDatabase().clearPassword(user.getUuid());
+                }
+                try {
+                    if (this.plugin.getGroupSyncService() != null) {
+                        UUID clearUuid = online != null ? online.getUniqueId() : user.getUuid();
+                        this.plugin.getGroupSyncService().clearSyncedGroups(clearUuid, user.getUsername(), "admin unlink");
+                    }
+                } catch (Exception groupErr) {
+                    this.plugin.getLogger().warn("[ADMIN] Group clear after unlink failed for {}: {}", targetName, groupErr.getMessage());
+                }
+                Player target = online != null ? online : this.plugin.getServer().getPlayer(user.getUuid()).orElse(null);
                 if (target != null) {
                     List<Component> kickMsg = this.getMessageManager().getMessageList("kick.admin-unlink", new String[0]);
                     target.disconnect((Component)(kickMsg.isEmpty() ? Component.text((String)"Account unlinked by admin", (TextColor)NamedTextColor.YELLOW) : Component.join((JoinConfiguration)JoinConfiguration.separator((ComponentLike)Component.newline()), kickMsg)));
@@ -425,7 +477,7 @@ implements SimpleCommand {
             player.sendMessage(this.msg("cmd-no-permission"));
             return;
         }
-        player.sendMessage(this.getMessageManager().getMessage("info-header", "{version}", "1.1.0"));
+        player.sendMessage(this.getMessageManager().getMessage("info-header", "{version}", BuildConstants.VERSION));
         player.sendMessage((Component)Component.empty());
         if (this.plugin.getUpdateManager() != null) {
             player.sendMessage(this.msg("update-checking"));
@@ -459,7 +511,7 @@ implements SimpleCommand {
 
     private void handleSyncGroups(Player player, String[] args) {
         if (this.plugin.getGroupSyncService() == null || !this.plugin.getGroupSyncService().isEnabled()) {
-            player.sendMessage((Component)Component.text((String)"Group sync is disabled.", (TextColor)NamedTextColor.RED));
+            player.sendMessage(this.msg("cmd-syncgroups-disabled"));
             return;
         }
         Player target = player;
@@ -470,7 +522,7 @@ implements SimpleCommand {
             }
             target = this.plugin.getServer().getPlayer(args[1]).orElse(null);
             if (target == null) {
-                player.sendMessage((Component)Component.text((String)"Player not found or not online.", (TextColor)NamedTextColor.RED));
+                player.sendMessage(this.msg("cmd-syncgroups-player-not-found"));
                 return;
             }
         }
@@ -478,7 +530,7 @@ implements SimpleCommand {
             return;
         }
         this.plugin.getGroupSyncService().syncPlayer(target, "manual command");
-        player.sendMessage((Component)Component.text((String)("Group sync queued for " + target.getUsername() + "."), (TextColor)NamedTextColor.GREEN));
+        player.sendMessage(this.getMessageManager().getMessage("cmd-syncgroups-queued", "{player}", target.getUsername()));
     }
 
     private void handleReload(Player player) {
@@ -695,7 +747,7 @@ implements SimpleCommand {
             source.sendMessage((Component)Component.text((String)"No permission", (TextColor)NamedTextColor.RED));
             return;
         }
-        source.sendMessage((Component)Component.text((String)"RelishAuth v1.1.0", (TextColor)NamedTextColor.AQUA));
+        source.sendMessage((Component)Component.text((String)("RelishAuth v" + BuildConstants.VERSION), (TextColor)NamedTextColor.AQUA));
         source.sendMessage((Component)Component.text((String)("Database: " + (this.plugin.getDatabase() != null && this.plugin.getDatabase().isHealthy() ? "Connected" : "Disconnected")), (TextColor)NamedTextColor.GRAY));
         source.sendMessage((Component)Component.text((String)("Discord Bot: " + (this.plugin.getDiscordBot() != null && this.plugin.getDiscordBot().isEnabled() ? "Connected" : "Disconnected")), (TextColor)NamedTextColor.GRAY));
     }
@@ -705,7 +757,7 @@ implements SimpleCommand {
             player.sendMessage(this.msg("error-auth-unavailable"));
             return false;
         }
-        if (!this.plugin.getAuthManager().isAuthenticated(player.getUniqueId())) {
+        if (!this.plugin.getAuthManager().isAuthenticated(player.getUniqueId(), player.getUsername())) {
             player.sendMessage(this.msg("cmd-authenticated-required"));
             return false;
         }
@@ -713,7 +765,7 @@ implements SimpleCommand {
             player.sendMessage(this.msg("error-auth-service-unavailable"));
             return false;
         }
-        User user = this.plugin.getAuthService().getUser(player.getUniqueId());
+        User user = this.plugin.getAuthService().resolveUserForPlayer(player);
         if (user == null) {
             player.sendMessage(this.msg("cmd-account-data-not-found"));
             return false;
@@ -730,7 +782,7 @@ implements SimpleCommand {
         player.sendMessage(this.msg("help-unlink"));
         player.sendMessage(this.msg("help-notify"));
         player.sendMessage(this.msg("help-session"));
-        player.sendMessage(Component.text((String)"/ra syncgroups [player] ", (TextColor)NamedTextColor.AQUA).append((Component)Component.text((String)"Sync Discord roles to Minecraft groups", (TextColor)NamedTextColor.GRAY)));
+        player.sendMessage(this.msg("help-syncgroups"));
         if (this.isAdmin(player)) {
             player.sendMessage((Component)Component.empty());
             player.sendMessage(this.msg("help-admin"));

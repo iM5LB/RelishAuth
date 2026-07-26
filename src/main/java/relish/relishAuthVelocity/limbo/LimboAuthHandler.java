@@ -3,6 +3,7 @@ package relish.relishAuthVelocity.limbo;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import java.net.InetAddress;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.chunk.Dimension;
 import net.elytrium.limboapi.api.chunk.VirtualBlock;
 import net.elytrium.limboapi.api.chunk.VirtualWorld;
+import net.elytrium.limboapi.api.command.LimboCommandMeta;
 import net.elytrium.limboapi.api.player.GameMode;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -33,8 +35,10 @@ import relish.relishAuthVelocity.premium.PremiumStatus;
 import relish.relishAuthVelocity.premium.PremiumVerificationResult;
 import relish.relishAuthVelocity.services.SkinCacheResolver;
 import relish.relishAuthVelocity.utils.BackendServerResolver;
+import relish.relishAuthVelocity.utils.MessageManager;
 import relish.relishAuthVelocity.utils.ValidationUtil;
 import relish.relishAuthVelocity.validators.PasswordValidator;
+import relish.relishAuthVelocity.constants.AuthMethod;
 
 public class LimboAuthHandler {
     private final RelishAuthVelocity plugin;
@@ -118,6 +122,15 @@ public class LimboAuthHandler {
 
     private Limbo createLimbo(LimboFactory factory, VirtualWorld world) {
         Limbo limbo = factory.createLimbo(world).setName("Auth").setGameMode(GameMode.SPECTATOR);
+        // Advertise chooser commands to the limbo client so ClickEvent.runCommand works.
+        // Actual handling is in MinimalLimboSessionHandler#onChat (LimboAPI does not run Velocity commands).
+        try {
+            limbo.registerCommand(new LimboCommandMeta(List.of("password")));
+            limbo.registerCommand(new LimboCommandMeta(List.of("discord")));
+        }
+        catch (Exception e) {
+            this.plugin.getLogger().warn("[LIMBO] Failed to register login chooser commands: {}", (Object)e.getMessage());
+        }
         int readTimeout = this.config.getInt("security.limbo-read-timeout-ms", 120000);
         try {
             limbo.getClass().getMethod("setReadTimeout", Integer.TYPE).invoke((Object)limbo, readTimeout);
@@ -143,17 +156,28 @@ public class LimboAuthHandler {
         }
         String authMethod = this.config.getString("authentication.method", "password");
         PremiumVerificationResult premiumResult = this.getPremiumResult(player);
+        boolean isBedrock = this.plugin.getFloodgateHelper() != null && this.plugin.getFloodgateHelper().isFloodgatePlayer(player);
         if (premiumResult == null) {
-            this.plugin.getLogger().warn("[AUTH-DECISION] Account verification result is not available yet for {}; requiring authentication", (Object)player.getUsername());
-            return true;
+            if (isBedrock) {
+                // PreLogin often caches under the unprefixed name; Floodgate then adds '.' and a new UUID.
+                // Treat Bedrock as non-premium and continue so Discord/password sessions can still apply.
+                this.plugin.debug("[AUTH-DECISION] Premium verification missing for Bedrock {}; treating as non-premium", player.getUsername());
+            } else {
+                this.plugin.getLogger().warn("[AUTH-DECISION] Account verification result is not available yet for {}; requiring authentication", (Object)player.getUsername());
+                return true;
+            }
         }
         boolean isPremium = this.isPremiumVerified(premiumResult);
         boolean isRegistered = this.authService.isRegistered(accountUuid);
         boolean autoLoginEnabled = this.config.getBoolean("authentication.premium-auto-login", true);
-        this.plugin.debug("[AUTH-DECISION] {} -> method={}, premium={}, registered={}, autoLogin={}", player.getUsername(), authMethod, isPremium, isRegistered, autoLoginEnabled);
+        this.plugin.debug("[AUTH-DECISION] {} -> method={}, premium={}, registered={}, autoLogin={}, bedrock={}", player.getUsername(), authMethod, isPremium, isRegistered, autoLoginEnabled, isBedrock);
         try {
-            if ("discord".equalsIgnoreCase(authMethod)) {
+            AuthMethod method = AuthMethod.fromString(authMethod);
+            if (method == AuthMethod.DISCORD) {
                 return this.checkDiscordAuth(player, sessionUuid, accountUuid, address, isPremium, isRegistered, autoLoginEnabled);
+            }
+            if (method == AuthMethod.HYBRID) {
+                return this.checkHybridAuth(player, sessionUuid, accountUuid, address, isPremium, isRegistered, autoLoginEnabled);
             }
             return this.checkPasswordAuth(player, sessionUuid, accountUuid, address, isPremium, isRegistered, autoLoginEnabled);
         }
@@ -267,6 +291,46 @@ public class LimboAuthHandler {
         return true;
     }
 
+    private boolean checkHybridAuth(Player player, UUID sessionUuid, UUID accountUuid, InetAddress address, boolean isPremium, boolean isRegistered, boolean autoLoginEnabled) {
+        String discordId = this.authService.getDiscordId(accountUuid);
+        boolean discordLinked = ValidationUtil.isRealDiscordId(discordId);
+        boolean isBedrock = this.plugin.getFloodgateHelper() != null && this.plugin.getFloodgateHelper().isFloodgatePlayer(player);
+
+        if (isPremium && autoLoginEnabled) {
+            if (!discordLinked) {
+                this.plugin.debug("[AUTH-DECISION] {} is premium but hybrid mode requires Discord; authentication required", player.getUsername());
+                return true;
+            }
+            if (!isRegistered) {
+                this.plugin.debug("[AUTH-DECISION] {} is premium+Discord and not registered; creating premium account", player.getUsername());
+                this.authService.registerPremium(accountUuid, player.getUsername(), address);
+            }
+            this.plugin.debug("[AUTH-DECISION] {} premium hybrid auto-authenticating with linked Discord", player.getUsername());
+            this.authService.authenticatePremium(accountUuid, address);
+            this.plugin.getAuthManager().setAuthenticated(sessionUuid, player.getUsername(), true);
+            if (this.plugin.getServerConnectHandler() != null) {
+                if (isBedrock) {
+                    this.plugin.getServerConnectHandler().markBedrockAutoAuthReturning(sessionUuid);
+                } else {
+                    this.plugin.getServerConnectHandler().markPremiumAutoAuth(sessionUuid);
+                }
+            }
+            return false;
+        }
+
+        if (isRegistered && this.authService.isAuthenticated(accountUuid, address) && discordLinked) {
+            this.plugin.debug("[AUTH-DECISION] {} has valid hybrid session (password + Discord)", player.getUsername());
+            this.plugin.getAuthManager().setAuthenticated(sessionUuid, player.getUsername(), true);
+            if (this.plugin.getServerConnectHandler() != null) {
+                this.plugin.getServerConnectHandler().markSessionValid(sessionUuid);
+            }
+            return false;
+        }
+
+        this.plugin.debug("[AUTH-DECISION] {} requires hybrid authentication (password + Discord)", player.getUsername());
+        return true;
+    }
+
     public void authPlayer(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
         if (!this.isInitialized()) {
@@ -282,7 +346,12 @@ public class LimboAuthHandler {
         boolean isPremium = this.isPremiumPlayer(player, sessionUuid);
         this.plugin.debug("[AUTH] {} to limbo (registered: {}, premium: {})", player.getUsername(), isRegistered, isPremium);
         try {
-            if ("discord".equalsIgnoreCase(authMethod)) {
+            AuthMethod method = AuthMethod.fromString(authMethod);
+            if (method == AuthMethod.DISCORD) {
+                this.handleDiscordAuth(player, sessionUuid, accountUuid, isRegistered, isPremium);
+            } else if (method == AuthMethod.HYBRID && isPremium && this.config.getBoolean("authentication.premium-auto-login", true)
+                    && !ValidationUtil.isRealDiscordId(this.authService.getDiscordId(accountUuid))) {
+                // Premium hybrid players without Discord skip password and link Discord directly.
                 this.handleDiscordAuth(player, sessionUuid, accountUuid, isRegistered, isPremium);
             } else {
                 this.sendToLimbo(player, isRegistered, isPremium);
@@ -299,21 +368,8 @@ public class LimboAuthHandler {
             this.disconnectWithError(player, "discord-bot-not-configured");
             return;
         }
+        // Limbo session handler owns Discord prompts/verify DMs (avoids double-send + chat spam).
         this.sendToLimbo(player, isRegistered, isPremium);
-        int delay = this.config.getInt("customization.limbo.timing.discord-prompt-delay", 1000);
-        this.plugin.getServer().getScheduler().buildTask((Object)this.plugin, () -> {
-            try {
-                String discordId;
-                if (isRegistered && (discordId = this.authService.getDiscordId(accountUuid)) != null && !discordId.isEmpty()) {
-                    this.plugin.getDiscordBot().sendVerificationRequest(discordId, player.getUsername(), sessionUuid, player.getRemoteAddress().getAddress().getHostAddress(), false);
-                    Component msg = this.plugin.getMessageManager() != null ? this.plugin.getMessageManager().getMessage("error-discord-dm-sent") : Component.text((String)"Discord verification request sent! Check your Discord DMs.", (TextColor)NamedTextColor.GREEN);
-                    player.sendMessage((Component)msg);
-                }
-            }
-            catch (Exception e) {
-                this.plugin.getLogger().error("[AUTH] Error sending Discord prompt to {}: {}", (Object)player.getUsername(), (Object)e.getMessage());
-            }
-        }).delay((long)delay, TimeUnit.MILLISECONDS).schedule();
     }
 
     private boolean isPremiumPlayer(Player player, UUID uuid) {
@@ -402,6 +458,10 @@ public class LimboAuthHandler {
             }
             case "wrong_password": {
                 player.sendMessage(this.plugin.getMessageManager().getMessage("auth.login.wrong-password", "{attempts}", String.valueOf(result.getAttemptsRemaining())));
+                MinimalLimboSessionHandler handler = this.sessionHandlers.get(player.getUniqueId());
+                if (handler != null) {
+                    handler.repromptPasswordAuth();
+                }
                 break;
             }
             case "locked_out": {
@@ -441,8 +501,12 @@ public class LimboAuthHandler {
                 }
                 Component validationMsg = this.plugin.getMessageManager() != null ? this.plugin.getMessageManager().getMessage("password-validation-failed", "{message}", validationResult.getMessage()) : Component.text((String)validationResult.getMessage(), (TextColor)NamedTextColor.RED);
                 player.sendMessage((Component)validationMsg);
-                for (Component line : this.plugin.getMessageManager().getMessageList("auth.register.confirm", new String[0])) {
-                    player.sendMessage(line);
+                if (handler != null) {
+                    handler.repromptPasswordAuth();
+                } else {
+                    for (Component line : this.plugin.getMessageManager().getMessageList("auth.register.confirm", new String[0])) {
+                        player.sendMessage(line);
+                    }
                 }
                 return;
             }
@@ -477,6 +541,12 @@ public class LimboAuthHandler {
         UUID uuid = player.getUniqueId();
         String username = player.getUsername();
         this.plugin.debug("[AUTH-SUCCESS] {} completed authentication ({})", username, context);
+
+        if (this.requiresHybridDiscordLink(player, uuid, username)) {
+            this.beginHybridDiscordLink(player, uuid, username);
+            return;
+        }
+
         try {
             MinimalLimboSessionHandler handler;
             this.applySkinIfPresent(player, uuid, username);
@@ -495,6 +565,34 @@ public class LimboAuthHandler {
         }
         catch (Exception e) {
             this.plugin.getLogger().error("[AUTH-SUCCESS] Error finalizing auth for {}: {}", username, e.getMessage(), e);
+        }
+    }
+
+    private boolean requiresHybridDiscordLink(Player player, UUID sessionUuid, String username) {
+        if (AuthMethod.fromString(this.config.getString("authentication.method", "password")) != AuthMethod.HYBRID) {
+            return false;
+        }
+        UUID accountUuid = this.plugin.getAuthManager().resolveAccountUuid(sessionUuid, username);
+        return !ValidationUtil.isRealDiscordId(this.authService.getDiscordId(accountUuid));
+    }
+
+    private void beginHybridDiscordLink(Player player, UUID sessionUuid, String username) {
+        this.plugin.debug("[AUTH-SUCCESS] {} password ok; hybrid mode requires Discord link", username);
+        if (this.plugin.getDiscordBot() == null || !this.plugin.getDiscordBot().isEnabled()) {
+            this.disconnectWithError(player, "discord-bot-not-configured");
+            return;
+        }
+        MinimalLimboSessionHandler handler = this.sessionHandlers.get(sessionUuid);
+        if (handler == null || handler.getLimboPlayer() == null) {
+            this.plugin.getLogger().warn("[AUTH] Hybrid Discord link requested but {} is not in limbo", (Object)username);
+            this.disconnectWithError(player, "error-auth-failed-generic");
+            return;
+        }
+        handler.enableDiscordLinkPhase();
+        player.sendMessage(this.plugin.getMessageManager().getMessage("hybrid-discord-required"));
+        String serverName = this.plugin.getMessageManager().getRawMessage("server-name");
+        for (String line : this.plugin.getMessageManager().getRawMessageList("discord-auth-required")) {
+            player.sendMessage(MessageManager.parseColors(line.replace("{server}", serverName)));
         }
     }
 

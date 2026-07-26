@@ -71,7 +71,11 @@
 - **Velocity Proxy** 3.4.0 or higher
 - **Java** 21 or higher
 - **LimboAPI** plugin (required dependency)
+- **Floodgate** (optional, for Bedrock players)
 - **Discord Bot** (optional, for Discord features)
+
+### Documentation
+Full guides live in [`docs/`](docs/) (also published at [im5lb.github.io/relishauth](https://im5lb.github.io/relishauth/)).
 
 ### Step 1: Download and Install
 1. Download plugin JAR file
@@ -100,7 +104,7 @@
 ```yaml
 # Choose your authentication method
 authentication:
-  method: "password"  # Options: password, discord
+  method: "password"  # Options: password, discord, hybrid
   premium-auto-login: true
   allow-bedrock-players: true
 
@@ -279,18 +283,17 @@ RelishAuth respects Velocity's chosen initial server after authentication (it wi
 
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/link` | Instructions for linking account | Everyone |
+| `/password` | Manage account password | Linked users |
 | `/session [duration]` | Set session duration | Linked users |
-| `/notifications [toggle]` | Toggle join notifications | Linked users |
-| `/info [player]` | View account information | Admin |
-| `/kick <player>` | Kick player from server | Admin |
-| `/unlink <player>` | Unlink player's account | Admin |
-| `/block <username> <ip>` | Block username from IP | Admin |
-| `/unblock <username> <from>` | Unblock username from IP | Admin |
-| `/clearblocks <username>` | Clear all stored blocks for username | Admin |
-| `/setpassword <player> <new> <confirm>` | Admin set a player's password | Admin |
-| `/resetpassword <player> [length]` | Admin reset password (temp password) | Admin |
+| `/notify [option]` | Toggle join notifications | Linked users |
+| `/logout` | Clear all sessions | Linked users |
+| `/info [player]` | View account information | Self / Admin |
+| `/unlink [player]` | Unlink Discord account | Linked / Admin |
+| `/block` `/unblock` `/clearblocks` | IP blocks | Admin |
+| `/setpassword` `/resetpassword` | Password admin | Admin |
 | `/reload` | Reload plugin configuration | Admin |
+
+Full command details: [docs/Commands.md](docs/Commands.md) · [Online docs](https://im5lb.github.io/relishauth/)
 
 ---
 ## 📞 **Support & Links**

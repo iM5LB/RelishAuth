@@ -141,11 +141,12 @@ public class Config {
         String hashing;
         String botToken;
         String authMethod = this.getString("authentication.method", "password").toLowerCase();
-        if (!authMethod.equals("password") && !authMethod.equals("discord")) {
-            this.validationErrors.add("Invalid authentication.method: " + authMethod + ". Must be password or discord");
+        if (!authMethod.equals("password") && !authMethod.equals("discord") && !authMethod.equals("hybrid")) {
+            this.validationErrors.add("Invalid authentication.method: " + authMethod + ". Must be password, discord, or hybrid");
         }
-        if (authMethod.equals("discord") && ((botToken = this.getString("discord.bot-token", "")).isEmpty() || botToken.equals("YOUR_BOT_TOKEN_HERE"))) {
-            this.validationErrors.add("discord.bot-token is required when authentication.method is discord");
+        if ((authMethod.equals("discord") || authMethod.equals("hybrid"))
+                && ((botToken = this.getString("discord.bot-token", "")).isEmpty() || botToken.equals("YOUR_BOT_TOKEN_HERE"))) {
+            this.validationErrors.add("discord.bot-token is required when authentication.method is " + authMethod);
         }
         int minLength = this.getInt("authentication.password.min-length", 6);
         int maxLength = this.getInt("authentication.password.max-length", 32);
@@ -294,8 +295,12 @@ public class Config {
     }
 
     private void validateGroupSyncConfig() {
+        if (!this.getBoolean("group-sync.enabled", false)) {
+            return;
+        }
         Object raw = this.get("group-sync.role-to-group");
         if (raw == null) {
+            this.validationErrors.add("group-sync.enabled is true but group-sync.role-to-group is missing");
             return;
         }
         if (!(raw instanceof Map)) {
@@ -303,6 +308,9 @@ public class Config {
             return;
         }
         Map<?, ?> map = (Map<?, ?>)raw;
+        if (map.isEmpty()) {
+            this.validationErrors.add("group-sync.enabled is true but group-sync.role-to-group has no mappings");
+        }
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             String roleId;
             String groupName = entry.getKey() == null ? "" : entry.getKey().toString().trim();

@@ -47,7 +47,12 @@ public class AuthenticationManager {
         Object object = this.premiumCacheLock;
         synchronized (object) {
             try {
-                this.premiumResultsByUsername.put(username.toLowerCase(), result);
+                String key = username.toLowerCase();
+                this.premiumResultsByUsername.put(key, result);
+                String stripped = stripFloodgatePrefix(username);
+                if (stripped != null && !stripped.equalsIgnoreCase(username)) {
+                    this.premiumResultsByUsername.put(stripped.toLowerCase(), result);
+                }
                 this.plugin.debug("[AUTH-MANAGER] Cached premium verification for {}: {}", username, result != null ? result.getStatus() : "null");
             }
             catch (Exception e) {
@@ -63,13 +68,32 @@ public class AuthenticationManager {
         Object object = this.premiumCacheLock;
         synchronized (object) {
             try {
-                return this.premiumResultsByUsername.get(username.toLowerCase());
+                PremiumVerificationResult result = this.premiumResultsByUsername.get(username.toLowerCase());
+                if (result != null) {
+                    return result;
+                }
+                String stripped = stripFloodgatePrefix(username);
+                if (stripped != null && !stripped.equalsIgnoreCase(username)) {
+                    return this.premiumResultsByUsername.get(stripped.toLowerCase());
+                }
+                return null;
             }
             catch (Exception e) {
                 this.plugin.getLogger().error("[AUTH-MANAGER] Error getting premium result for {}: {}", (Object)username, (Object)e.getMessage());
                 return null;
             }
         }
+    }
+
+    /**
+     * Floodgate may rewrite Bedrock names with a leading '.' after PreLogin, while premium
+     * verification was cached under the unprefixed name.
+     */
+    public static String stripFloodgatePrefix(String username) {
+        if (username == null || username.isEmpty()) {
+            return username;
+        }
+        return username.charAt(0) == '.' ? username.substring(1) : username;
     }
 
     public UUID resolveAccountUuid(UUID connectionUuid, String username) {

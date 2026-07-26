@@ -145,6 +145,7 @@ public class AuthDatabase {
                 stmt.execute(this.schema.buildUsersTableCreationSQL(this.isMySQL, this.isPostgreSQL));
                 stmt.execute(this.schema.buildSessionsTableCreationSQL(this.isMySQL, this.isPostgreSQL));
                 this.ensureUsersSkinDataColumnExists(conn);
+                this.ensureUsersUsernameWidth(conn);
                 if (this.isPostgreSQL) {
                     this.migrateJoinNotificationsToBoolean(conn);
                     this.migrateSessionsLastSeenToBigint(conn);
@@ -250,6 +251,100 @@ public class AuthDatabase {
             }
             throw e;
         }
+    }
+
+    /**
+     * Floodgate usernames are "." + gamertag (up to 17 chars). Older schemas used VARCHAR(16).
+     */
+    private void ensureUsersUsernameWidth(Connection conn) throws SQLException {
+        if (conn == null || (!this.isMySQL && !this.isPostgreSQL)) {
+            return;
+        }
+        try {
+            if (this.isMySQL) {
+                String sql = String.format("ALTER TABLE %s MODIFY COLUMN %s VARCHAR(32) NOT NULL",
+                        this.schema.usersTable, this.schema.usersUsername);
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.execute(sql);
+                }
+            } else {
+                String sql = String.format("ALTER TABLE %s ALTER COLUMN %s TYPE VARCHAR(32)",
+                        this.schema.usersTable, this.schema.usersUsername);
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.execute(sql);
+                }
+            }
+        } catch (SQLException e) {
+            String msg = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (msg.contains("same") || msg.contains("already") || msg.contains("no change")) {
+                return;
+            }
+            // Non-fatal: SQLite needs no change; some hosts disallow ALTER.
+        }
+    }
+
+    /**
+     * Marks Discord as unlinked without rewriting username/skin (avoids Bedrock VARCHAR / skin_data failures).
+     * @param markedDiscordId use null to clear the link, or {@code unlinked_<id>} to preserve re-link matching
+     */
+    public void unlinkDiscord(UUID uuid, String markedDiscordId) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        this.executeWithRetry(() -> {
+            try (Connection conn = this.dataSource.getConnection()) {
+                // Java + Floodgate can create two rows for the same Discord; UNIQUE(discord_id)
+                // fails if another row already holds unlinked_<id>. Clear conflicts first.
+                if (markedDiscordId != null && !markedDiscordId.isBlank()) {
+                    this.clearDiscordIdConflicts(conn, uuid, markedDiscordId);
+                    if (markedDiscordId.startsWith("unlinked_")) {
+                        String rawId = markedDiscordId.substring("unlinked_".length());
+                        if (!rawId.isBlank()) {
+                            this.clearDiscordIdConflicts(conn, uuid, rawId);
+                        }
+                    }
+                }
+                String sql = String.format("UPDATE %s SET %s = ?, %s = ? WHERE %s = ?",
+                        this.schema.usersTable,
+                        this.schema.usersDiscordId,
+                        this.schema.usersAccountType,
+                        this.schema.usersUuid);
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    stmt.setString(1, markedDiscordId);
+                    stmt.setString(2, "UNLINKED");
+                    stmt.setString(3, uuid.toString());
+                    stmt.executeUpdate();
+                }
+            }
+            return null;
+        }, "unlinkDiscord");
+    }
+
+    private void clearDiscordIdConflicts(Connection conn, UUID keepUuid, String discordId) throws SQLException {
+        String sql = String.format("UPDATE %s SET %s = NULL WHERE %s = ? AND %s <> ?",
+                this.schema.usersTable,
+                this.schema.usersDiscordId,
+                this.schema.usersDiscordId,
+                this.schema.usersUuid);
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, discordId);
+            stmt.setString(2, keepUuid.toString());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void clearPassword(UUID uuid) {
+        Objects.requireNonNull(uuid, "UUID cannot be null");
+        String sql = String.format("UPDATE %s SET %s = NULL WHERE %s = ?",
+                this.schema.usersTable,
+                this.schema.usersPassword,
+                this.schema.usersUuid);
+        this.executeWithRetry(() -> {
+            try (Connection conn = this.dataSource.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, uuid.toString());
+                stmt.executeUpdate();
+            }
+            return null;
+        }, "clearPassword");
     }
 
     private boolean columnExists(Connection conn, String tableName, String columnName) throws SQLException {
@@ -439,25 +534,41 @@ public class AuthDatabase {
         String updateUserSql = String.format("UPDATE %s SET %s = ? WHERE %s = ?", this.schema.usersTable, this.schema.usersUuid, this.schema.usersUuid);
         String updateSessionSql = String.format("UPDATE %s SET %s = ? WHERE %s = ?", this.schema.sessionsTable, this.schema.sessionsUuid, this.schema.sessionsUuid);
         return this.executeWithRetry(() -> {
-            /*
-             * This method has failed to decompile.  When submitting a bug report, please provide this stack trace, and (if you hold appropriate legal rights) the relevant class file.
-             * 
-             * org.benf.cfr.reader.util.ConfusedCFRException: Tried to end blocks [1[TRYBLOCK]], but top level block is 36[SIMPLE_IF_TAKEN]
-             *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op04StructuredStatement.processEndingBlocks(Op04StructuredStatement.java:435)
-             *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op04StructuredStatement.buildNestedBlocks(Op04StructuredStatement.java:484)
-             *     at org.benf.cfr.reader.bytecode.analysis.opgraph.Op03SimpleStatement.createInitialStructuredBlock(Op03SimpleStatement.java:736)
-             *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisInner(CodeAnalyser.java:850)
-             *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysisOrWrapFail(CodeAnalyser.java:278)
-             *     at org.benf.cfr.reader.bytecode.CodeAnalyser.getAnalysis(CodeAnalyser.java:201)
-             *     at org.benf.cfr.reader.entities.attributes.AttributeCode.analyse(AttributeCode.java:94)
-             *     at org.benf.cfr.reader.entities.Method.analyse(Method.java:531)
-             *     at org.benf.cfr.reader.entities.ClassFile.analyseMid(ClassFile.java:1050)
-             *     at org.benf.cfr.reader.entities.ClassFile.analyseTop(ClassFile.java:942)
-             *     at org.benf.cfr.reader.Driver.doClass(Driver.java:84)
-             *     at org.benf.cfr.reader.CfrDriverImpl.analyse(CfrDriverImpl.java:78)
-             *     at org.benf.cfr.reader.Main.main(Main.java:54)
-             */
-            throw new IllegalStateException("Decompilation failed");
+            try (Connection conn = this.dataSource.getConnection()) {
+                boolean previousAutoCommit = conn.getAutoCommit();
+                conn.setAutoCommit(false);
+                try {
+                    if (!this.rowExists(conn, userExistsSql, fromUuid)) {
+                        conn.rollback();
+                        return false;
+                    }
+                    if (this.rowExists(conn, userExistsSql, toUuid) || this.rowExists(conn, sessionExistsSql, toUuid)) {
+                        conn.rollback();
+                        return false;
+                    }
+                    int updatedUsers;
+                    try (PreparedStatement stmt = conn.prepareStatement(updateUserSql)) {
+                        stmt.setString(1, toUuid.toString());
+                        stmt.setString(2, fromUuid.toString());
+                        updatedUsers = stmt.executeUpdate();
+                    }
+                    try (PreparedStatement stmt = conn.prepareStatement(updateSessionSql)) {
+                        stmt.setString(1, toUuid.toString());
+                        stmt.setString(2, fromUuid.toString());
+                        stmt.executeUpdate();
+                    }
+                    conn.commit();
+                    return updatedUsers > 0;
+                } catch (SQLException e) {
+                    conn.rollback();
+                    throw e;
+                } finally {
+                    try {
+                        conn.setAutoCommit(previousAutoCommit);
+                    } catch (SQLException ignored) {
+                    }
+                }
+            }
         }, "migrateUserUuid");
     }
 

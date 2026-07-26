@@ -29,6 +29,16 @@ first-join: "<#87CEEB>✔ <#F0F0F0>مرحباً بك في <#87CEEB>{server}<#F0F
 limbo:
   title: "<#1E90FF>RELISH <#87CEEB>Auth"
   subtitle: "<#A0A0A0>يرجى تسجيل الدخول للمتابعة"
+  discord-verify-title: "<#87CEEB>تحقق من ديسكورد"
+  discord-verify-subtitle: "<#A0A0A0>افتح ديسكورد واضغط Verify في الرسائل الخاصة"
+  discord-link-title: "<#87CEEB>ربط ديسكورد"
+  discord-link-subtitle: "<#A0A0A0>اكتب اسم مستخدم ديسكورد في الدردشة"
+  password-login-title: "<#87CEEB>تسجيل الدخول"
+  password-login-subtitle: "<#A0A0A0>اكتب كلمة المرور في الدردشة"
+  password-register-title: "<#87CEEB>إنشاء حساب"
+  password-register-subtitle: "<#A0A0A0>اكتب كلمة مرور جديدة في الدردشة"
+  chooser-title: "<#87CEEB>اختر طريقة الدخول"
+  chooser-subtitle: "<#A0A0A0>اكتب password أو discord في الدردشة"
   actionbar: "<#1E90FF>💙 <#A0A0A0>انتهاء مهلة التحقق خلال: <#87CEEB>{time}s"
   bossbar: "<#1E90FF>💙 <#A0A0A0>انتهاء مهلة التحقق خلال: <#87CEEB>{time}s"
 
@@ -98,6 +108,34 @@ auth:
       - ""
     success: "<#87CEEB>✔ <#F0F0F0>تم التسجيل بنجاح! جاري الاتصال بالسيرفر..."
     already-registered: "<#FF6B6B>✗ <#A0A0A0>أنت مسجل بالفعل!"
+
+  set-password-tip:
+    - ""
+    - "<#FFA500>💡 <#A0A0A0>نصيحة: عيّن كلمة مرور لتسجيل دخول أسرع في المرة القادمة"
+    - "<#808080>استخدم <#87CEEB>/ra password <new> <confirm> <#808080>أو زر Set Password في ديسكورد"
+    - ""
+
+  chooser:
+    header:
+      - ""
+      - "<#1E90FF>💙 <#87CEEB>اختر طريقة تسجيل الدخول إلى {server}"
+      - ""
+    password-button: "كلمة المرور"
+    discord-button: "ديسكورد"
+    password-hover: "تسجيل الدخول بكلمة المرور"
+    discord-hover: "تسجيل الدخول عبر ديسكورد"
+    hint:
+      - ""
+      - "<#A0A0A0>اضغط أحد الأزرار أعلاه للمتابعة"
+      - ""
+    bedrock-hint:
+      - ""
+      - "<#87CEEB>▶ <#A0A0A0>اكتب <#87CEEB>password <#A0A0A0>أو <#87CEEB>discord <#A0A0A0>في الدردشة"
+      - "<#808080>يمكنك أيضاً كتابة 1 أو 2"
+      - ""
+    invalid: "<#FF6B6B>✖ <#A0A0A0>اكتب <#87CEEB>password <#A0A0A0>أو <#87CEEB>discord"
+    selected-password: "<#87CEEB>✔ <#A0A0A0>تم الاختيار: <#87CEEB>كلمة المرور"
+    selected-discord: "<#87CEEB>✔ <#A0A0A0>تم الاختيار: <#87CEEB>ديسكورد"
 
 password-validation-failed: "<#FF6B6B>✗ <#A0A0A0>{message}"
 
@@ -276,12 +314,18 @@ cmd-admin-resetpassword-usage: "<#87CEEB>▶ <#A0A0A0>الاستخدام: <#87CE
 cmd-admin-resetpassword-success: "<#87CEEB>✔ <#A0A0A0>تم إعادة تعيين كلمة المرور لـ <#87CEEB>{player}<#A0A0A0>. كلمة المرور المؤقتة: <#87CEEB>{password}"
 cmd-admin-resetpassword-failed: "<#FF6B6B>✖ <#A0A0A0>فشل إعادة تعيين كلمة المرور: {error}"
 
+cmd-syncgroups-disabled: "<#FF6B6B>✖ <#A0A0A0>مزامنة المجموعات معطلة."
+cmd-syncgroups-player-not-found: "<#FF6B6B>✖ <#A0A0A0>اللاعب غير موجود أو غير متصل."
+cmd-syncgroups-queued: "<#87CEEB>✔ <#A0A0A0>تم جدولة مزامنة المجموعات لـ <#87CEEB>{player}<#A0A0A0>."
+
+hybrid-discord-required: "<#87CEEB>✔ <#A0A0A0>تم قبول كلمة المرور. <#87CEEB>الوضع الهجين <#A0A0A0>يتطلب أيضاً ربط ديسكورد."
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # رسائل إلغاء الربط
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 unlink-not-linked: "<#FF6B6B>✖ <#A0A0A0>حسابك غير مربوط!"
-unlink-cannot-unlink-special: "<#FF6B6B>✖ <#A0A0A0>لا يمكنك إلغاء ربط حساب كلمة مرور فقط أو حساب بريميوم!"
+unlink-success: "<#87CEEB>✔ <#A0A0A0>تم إلغاء ربط حساب ديسكورد"
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # رسائل أمر المعلومات
@@ -309,6 +353,7 @@ help-discord: "<#87CEEB>/ra discord <username> <#A0A0A0>ربط ديسكورد"
 help-unlink: "<#87CEEB>/ra unlink <#A0A0A0>إلغاء ربط ديسكورد"
 help-notify: "<#87CEEB>/ra notify <on/off> <#A0A0A0>تبديل الإشعارات"
 help-session: "<#87CEEB>/ra session [duration] <#A0A0A0>تعيين مدة الجلسة"
+help-syncgroups: "<#87CEEB>/ra syncgroups [player] <#A0A0A0>مزامنة رتب ديسكورد مع مجموعات ماينكرافت"
 help-admin: "<#87CEEB>أوامر الأدمن"
 help-reload: "<#87CEEB>/ra reload <#A0A0A0>إعادة تحميل الإعدادات"
 help-info: "<#87CEEB>/ra info <#A0A0A0>معلومات البلجن"

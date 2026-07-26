@@ -40,8 +40,9 @@ import relish.relishAuthVelocity.updater.UpdateManager;
 import relish.relishAuthVelocity.utils.ConnectionUtil;
 import relish.relishAuthVelocity.utils.FloodgateHelper;
 import relish.relishAuthVelocity.utils.MessageManager;
+import relish.relishAuthVelocity.BuildConstants;
 
-@Plugin(id="relishauth", name="RelishAuth", version="1.1.0", dependencies={@Dependency(id="limboapi", optional=false), @Dependency(id="luckperms", optional=true)})
+@Plugin(id="relishauth", name="RelishAuth", version=BuildConstants.VERSION, dependencies={@Dependency(id="limboapi", optional=false), @Dependency(id="luckperms", optional=true)})
 public class RelishAuthVelocity {
     @Inject
     private ProxyServer server;
@@ -194,7 +195,8 @@ public class RelishAuthVelocity {
         }
         catch (Exception e) {
             boolean required;
-            boolean bl = required = this.config != null && "discord".equalsIgnoreCase(this.config.getString("authentication.method", "password"));
+            String method = this.config != null ? this.config.getString("authentication.method", "password") : "password";
+            boolean bl = required = "discord".equalsIgnoreCase(method) || "hybrid".equalsIgnoreCase(method);
             if (required) {
                 throw new PluginException(PluginException.ErrorCode.INITIALIZATION_FAILED, "Discord authentication is enabled but Discord failed to initialize: " + e.getMessage(), e);
             }
@@ -207,6 +209,11 @@ public class RelishAuthVelocity {
     private void initializeGroupSyncService() {
         if (this.config == null || !this.config.getBoolean("group-sync.enabled", false)) {
             this.groupSyncService = null;
+            return;
+        }
+        if (this.discordBot == null || !this.discordBot.isEnabled()) {
+            this.groupSyncService = null;
+            this.logger.warn("[GROUP-SYNC] Enabled in config but Discord bot is not connected; group sync disabled until Discord is available");
             return;
         }
         try {
@@ -423,6 +430,7 @@ public class RelishAuthVelocity {
                 }
                 this.messageManager.reload();
             }
+            this.initializeGroupSyncService();
             this.debug("Configuration reloaded successfully", new Object[0]);
             return true;
         }
@@ -520,7 +528,7 @@ public class RelishAuthVelocity {
     private void printStartupHeader() {
         this.logger.info("");
         this.logger.info("\u001b[36m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m");
-        this.logger.info("\u001b[1;96m  RELISH Auth  \u001b[0m\u001b[90mv{}\u001b[0m", (Object)"1.1.0");
+        this.logger.info("\u001b[1;96m  RELISH Auth  \u001b[0m\u001b[90mv{}\u001b[0m", (Object)BuildConstants.VERSION);
         this.logger.info("\u001b[36m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m");
         this.logger.info("");
         this.logger.info("\u001b[96m  \u25b6 \u001b[0m\u001b[90mInitializing plugin...\u001b[0m");
@@ -566,7 +574,7 @@ public class RelishAuthVelocity {
     private void printShutdownHeader() {
         this.logger.info("");
         this.logger.info("\u001b[36m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m");
-        this.logger.info("\u001b[1;96m  RELISH Auth  \u001b[0m\u001b[90mv{}\u001b[0m", (Object)"1.1.0");
+        this.logger.info("\u001b[1;96m  RELISH Auth  \u001b[0m\u001b[90mv{}\u001b[0m", (Object)BuildConstants.VERSION);
         this.logger.info("\u001b[36m\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u001b[0m");
         this.logger.info("");
     }

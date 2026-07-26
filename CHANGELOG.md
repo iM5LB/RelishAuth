@@ -2,6 +2,39 @@
 
 All notable changes to RelishAuth will be documented in this file.
 
+## [1.1.1] - 2026-07-26
+
+### Fixed
+- Restored missing `BuildConstants` template and `settings.gradle`.
+- Restored broken `AuthDatabase.migrateUserUuid` (CFR decompile stub that always threw).
+- Password login no longer succeeds for accounts with a null/empty password (premium/Discord-only accounts).
+- Discord auth now ignores `unlinked_*` Discord IDs and compares link ownership with the resolved account UUID.
+- Hardened async Discord username lookup against disconnect NPEs.
+- Password hasher edge cases (algorithm normalization, `$2x$` bcrypt, null-safe config).
+- Group sync no longer wipes LuckPerms groups when Discord role lookup fails or Discord bot is offline.
+- Group sync resolves account UUID correctly, awaits LuckPerms saves, and clears mapped groups on unlink/guild leave.
+- Group sync re-initializes on `/ra reload`.
+- Login method chooser Java buttons now use limbo `runCommand` (`/password` / `/discord`) instead of Adventure callbacks, which LimboAPI does not execute.
+- `/ra unlink` self-unlink actually unlinks Discord again (it previously always replied with a hard-coded “cannot unlink” stub).
+- Discord button clicks no longer double-acknowledge interactions (`DiscordBot` + `DiscordCommands` both listened and both replied on expiry / `setduration`).
+- Bedrock/Floodgate: premium-verification cache now matches Floodgate `.` username prefix so reconnects can use Discord/password sessions instead of always being forced back to limbo.
+- Discord auth no longer double-sends verify DMs.
+- Discord slash/button interactions now acknowledge immediately with a blocking `deferReply().complete()` so they are not delayed past Discord’s 3s window behind other REST traffic (fixes `10062 Unknown interaction`).
+- Removed Floodgate Cumulus forms (they cannot be delivered inside LimboAPI). Bedrock auth uses limbo titles + chat prompts only; FloodgateHelper now only detects Bedrock players.
+- Login method chooser also appears when `authentication.method` is `discord` if the account has both a password and Discord linked (still disabled for hybrid).
+- Fixed Bedrock `/ra unlink`: targeted Discord unlink SQL (avoids full `updateUser` failures), Floodgate username/UUID resolution, and widened username column for `.` + gamertag.
+- Login chooser chat now always sends plain-text options (LimboAPI often drops clickable components); Java and Bedrock both see type `password` / `discord`.
+- Discord unlink can clear the account password (`authentication.clear-password-on-discord-unlink`, default true) so the old password cannot be reused.
+- Accounts without a password get a chat tip on backend join (`authentication.set-password-tip-on-join`), similar to the Discord join-alert tip.
+
+### Added
+- Hybrid authentication mode (`authentication.method: hybrid`): password login/register, then required Discord linking before leaving limbo.
+- Login method chooser when a player has both password and Discord linked (`authentication.login-chooser.enabled`):
+  - In limbo, type `password` / `discord` (or `1` / `2`); Java may also get clickable buttons (often dropped by LimboAPI)
+  - Works with `method` password or discord; disabled in hybrid mode (both factors required)
+- Backend chat tip when joining without a password (`authentication.set-password-tip-on-join`)
+- Language keys for `/ra syncgroups` (EN/AR), hybrid Discord prompt, and login chooser.
+
 ## [1.1.0] - 2026-05-31
 
 ### Added

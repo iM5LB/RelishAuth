@@ -28,6 +28,7 @@ import relish.relishAuthVelocity.limbo.LimboAuthHandler;
 import relish.relishAuthVelocity.models.User;
 import relish.relishAuthVelocity.services.SkinCacheResolver;
 import relish.relishAuthVelocity.services.SkinFetchService;
+import relish.relishAuthVelocity.utils.MessageManager;
 import relish.relishAuthVelocity.services.SkinPayloadUtil;
 
 public class ServerConnectEventHandler {
@@ -97,14 +98,17 @@ public class ServerConnectEventHandler {
             String serverName = ((ServerConnection)player.getCurrentServer().get()).getServerInfo().getName();
             boolean bl = isBackend = !serverName.equalsIgnoreCase("limbo") && !serverName.equalsIgnoreCase("auth");
             if (isBackend && this.plugin.getAuthManager().isAuthenticated(uuid, player.getUsername())) {
+                boolean justJoinedBackend = false;
                 if (this.pendingFirstJoin.remove(uuid)) {
                     this.plugin.debug("[SERVER-POST-CONNECT] Sending first join to {} on {}", player.getUsername(), serverName);
                     this.sendFirstJoinEffects(player);
                     this.sendJoinNotification(player);
+                    justJoinedBackend = true;
                 } else if (this.pendingAuthSuccess.remove(uuid)) {
                     this.plugin.debug("[SERVER-POST-CONNECT] Sending auth success to {} on {}", player.getUsername(), serverName);
                     this.sendAuthSuccessEffects(player);
                     this.sendJoinNotification(player);
+                    justJoinedBackend = true;
                 } else if (this.pendingAutoAuth.remove(uuid)) {
                     this.plugin.debug("[SERVER-POST-CONNECT] Sending auto-auth success to {} on {}", player.getUsername(), serverName);
                     this.sendAutoAuthMessage(player);
@@ -125,10 +129,14 @@ public class ServerConnectEventHandler {
                     this.plugin.debug("[SERVER-POST-CONNECT] Sending bedrock auto-auth first to {} on {}", player.getUsername(), serverName);
                     this.sendBedrockAutoAuthFirstMessage(player);
                     this.sendJoinNotification(player);
+                    justJoinedBackend = true;
                 } else if (this.pendingBedrockAutoAuthReturning.remove(uuid)) {
                     this.plugin.debug("[SERVER-POST-CONNECT] Sending bedrock auto-auth returning to {} on {}", player.getUsername(), serverName);
                     this.sendBedrockAutoAuthReturningMessage(player);
                     this.sendJoinNotification(player);
+                }
+                if (justJoinedBackend) {
+                    this.maybeSendSetPasswordTip(player);
                 }
                 if (this.plugin.getGroupSyncService() != null) {
                     this.plugin.getGroupSyncService().syncPlayer(player, "backend connect");
@@ -295,6 +303,31 @@ public class ServerConnectEventHandler {
                 this.plugin.getLogger().warn("[SERVER-POST-CONNECT] Error sending first join effects to {}: {}", (Object)player.getUsername(), (Object)e.getMessage());
             }
         }).delay(500L, TimeUnit.MILLISECONDS).schedule();
+    }
+
+    /**
+     * Chat tip (like Discord join-alert) when the account has no password yet.
+     */
+    private void maybeSendSetPasswordTip(Player player) {
+        if (!this.plugin.getConfig().getBoolean("authentication.set-password-tip-on-join", true)) {
+            return;
+        }
+        if (this.plugin.getAuthService() == null || this.plugin.getMessageManager() == null) {
+            return;
+        }
+        this.plugin.getServer().getScheduler().buildTask((Object) this.plugin, () -> {
+            try {
+                UUID accountUuid = this.plugin.getAuthManager().resolveAccountUuid(player.getUniqueId(), player.getUsername());
+                if (this.plugin.getAuthService().hasPassword(accountUuid)) {
+                    return;
+                }
+                for (String line : this.plugin.getMessageManager().getRawMessageList("auth.set-password-tip")) {
+                    player.sendMessage(MessageManager.parseColors(line));
+                }
+            } catch (Exception e) {
+                this.plugin.getLogger().warn("[SERVER-POST-CONNECT] Error sending set-password tip to {}: {}", player.getUsername(), e.getMessage());
+            }
+        }).delay(1500L, TimeUnit.MILLISECONDS).schedule();
     }
 
     private void sendAuthSuccessEffects(Player player) {

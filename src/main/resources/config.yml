@@ -1,5 +1,5 @@
 # ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-# ┃           RelishAuth v1.1.0                     ┃
+# ┃           RelishAuth v1.1.1                     ┃
 # ┃     Secure Authentication for Velocity Servers      ┃
 # ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
@@ -37,7 +37,7 @@ routing:
   post-auth-server: ""
 
 # Sync Discord roles to Minecraft permission groups using LuckPerms.
-# Requires LuckPerms on the Velocity proxy.
+# Requires LuckPerms on the Velocity proxy AND a connected Discord bot.
 group-sync:
   enabled: false
 
@@ -49,7 +49,7 @@ group-sync:
   role-to-group: {}
 
   # If true, mapped LuckPerms groups are removed when the linked Discord user
-  # no longer has the mapped role.
+  # no longer has the mapped role (or after Discord unlink / leaving the guild).
   remove-groups-when-role-missing: true
 
 # ════════════════════════════════════════════════════════
@@ -132,7 +132,15 @@ authentication:
   # Options:
   #   password - Players create a password (Discord optional)
   #   discord  - Players must link Discord account
+  #   hybrid   - Password + Discord required (maximum security)
   method: "password"
+
+  # When a player has BOTH a password and a linked Discord account, show a
+  # login-method chooser in limbo. Type password/discord (or 1/2) in chat.
+  # Java may also get clickable buttons (LimboAPI often drops them — typing always works).
+  # Works with method password or discord. Ignored for hybrid (both factors are always required).
+  login-chooser:
+    enabled: true
   
   # Premium (paid) account auto-login
   # When enabled, premium accounts skip authentication
@@ -165,7 +173,15 @@ authentication:
   # Prevent Discord account switching after unlinking
   # If enabled, players can only re-link the same Discord account
   enforce-discord-account-match: true
+
+  # When Discord is unlinked, also clear the account password so the old password
+  # cannot be used to log into that Minecraft account anymore.
+  clear-password-on-discord-unlink: true
   
+  # Chat tip after joining the backend when the account has no password yet
+  # (same idea as the Discord join-alert "Set Password" tip).
+  set-password-tip-on-join: true
+
   # Password requirements (when method is "password")
   password:
     # Length limits

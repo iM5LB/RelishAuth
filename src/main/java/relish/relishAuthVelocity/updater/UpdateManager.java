@@ -16,6 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import relish.relishAuthVelocity.updater.ConfigUpdater;
 import relish.relishAuthVelocity.updater.UpdateChecker;
+import relish.relishAuthVelocity.BuildConstants;
 
 public class UpdateManager {
     private final Logger logger;
@@ -27,7 +28,7 @@ public class UpdateManager {
         this.logger = logger;
         this.dataDirectory = dataDirectory;
         this.configUpdater = new ConfigUpdater(logger, dataDirectory.resolve("config.yml"));
-        this.updateChecker = new UpdateChecker(logger, "1.1.0");
+        this.updateChecker = new UpdateChecker(logger, BuildConstants.VERSION);
     }
 
     public boolean updateConfigurationFiles() {
@@ -96,7 +97,7 @@ public class UpdateManager {
     public CompletableFuture<UpdateChecker.UpdateInfo> checkForPluginUpdates() {
         return this.updateChecker.checkForUpdates().thenApply(info -> {
             if (info.isUpdateAvailable()) {
-                this.logger.info("\u001b[93m  \u26a0 Update available: v{} \u2192 v{}\u001b[0m", (Object)"1.1.0", (Object)info.getLatestVersion());
+                this.logger.info("\u001b[93m  \u26a0 Update available: v{} \u2192 v{}\u001b[0m", (Object)BuildConstants.VERSION, (Object)info.getLatestVersion());
                 if (info.getDownloadUrl() != null) {
                     this.logger.info("\u001b[96m    Download: \u001b[0m\u001b[94m{}\u001b[0m", (Object)info.getDownloadUrl());
                 }
@@ -104,7 +105,7 @@ public class UpdateManager {
             return info;
         }).exceptionally(throwable -> {
             this.logger.debug("Failed to check for updates: {}", (Object)throwable.getMessage());
-            return new UpdateChecker.UpdateInfo(false, "1.1.0", null, null);
+            return new UpdateChecker.UpdateInfo(false, BuildConstants.VERSION, null, null);
         });
     }
 
