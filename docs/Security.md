@@ -195,7 +195,7 @@ authentication:
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-username-impersonation: true  # ⚠️ DANGEROUS!
+  allow-premium-username-impersonation: true  # Warning: DANGEROUS!
 ```
 - Anyone can join as premium username
 - No verification required

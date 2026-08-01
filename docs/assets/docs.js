@@ -1,29 +1,29 @@
-// GitBook-style Documentation System for RelishAuth
-// Enhanced with theme toggle, mobile sidebar, and improved navigation
+// GitBook-style documentation for RelishAuth (Font Awesome icons, no emoji)
 
 const PAGES = [
-  { file: 'README.md', title: 'Home', section: null, icon: '🏠' },
-  { file: 'QuickStart.md', title: 'Quick Start', section: null, icon: '⚡' },
-  { file: 'Installation.md', title: 'Installation', section: null, icon: '📥' },
-  
-  { file: 'Configuration.md', title: 'Configuration Guide', section: 'Configuration', icon: '⚙️' },
-  { file: 'AuthMethods.md', title: 'Authentication Methods', section: 'Configuration', icon: '🔑' },
-  { file: 'Security.md', title: 'Security Settings', section: 'Configuration', icon: '🛡️' },
-  { file: 'Database.md', title: 'Database Setup', section: 'Configuration', icon: '🗄️' },
-  
-  { file: 'DiscordBot.md', title: 'Discord Bot Setup', section: 'Features', icon: '🤖' },
-  { file: 'Commands.md', title: 'Commands', section: 'Features', icon: '⌨️' },
-  { file: 'Permissions.md', title: 'Permissions', section: 'Features', icon: '🔐' },
-  
-  { file: 'Troubleshooting.md', title: 'Troubleshooting', section: 'Reference', icon: '🩺' },
+  { file: 'README.md', title: 'Home', section: null, icon: 'fa-solid fa-house' },
+  { file: 'QuickStart.md', title: 'Quick Start', section: null, icon: 'fa-solid fa-bolt' },
+  { file: 'Installation.md', title: 'Installation', section: null, icon: 'fa-solid fa-download' },
+
+  { file: 'Configuration.md', title: 'Configuration', section: 'Configuration', icon: 'fa-solid fa-sliders' },
+  { file: 'AuthMethods.md', title: 'Auth Methods', section: 'Configuration', icon: 'fa-solid fa-key' },
+  { file: 'Security.md', title: 'Security', section: 'Configuration', icon: 'fa-solid fa-shield-halved' },
+  { file: 'Database.md', title: 'Database', section: 'Configuration', icon: 'fa-solid fa-database' },
+
+  { file: 'DiscordBot.md', title: 'Discord Bot', section: 'Features', icon: 'fa-brands fa-discord' },
+  { file: 'Commands.md', title: 'Commands', section: 'Features', icon: 'fa-solid fa-terminal' },
+  { file: 'Permissions.md', title: 'Permissions', section: 'Features', icon: 'fa-solid fa-lock' },
+
+  { file: 'Troubleshooting.md', title: 'Troubleshooting', section: 'Reference', icon: 'fa-solid fa-wrench' },
+  { file: 'CHANGELOG.md', title: 'Changelog', section: 'Reference', icon: 'fa-solid fa-clock-rotate-left' },
 ];
 
-// DOM Elements
 const el = (sel) => document.querySelector(sel);
 const nav = el('#sidebar-nav');
 const doc = el('#doc');
 const toc = el('#toc');
 const search = el('#search');
+const searchResults = el('#search-results');
 const lastUpdated = el('#last-updated');
 const themeToggle = el('#theme-toggle');
 const sidebarToggle = el('#sidebar-toggle');
@@ -31,8 +31,8 @@ const sidebar = el('#sidebar');
 const searchIndex = new Map();
 const searchPreviewIndex = new Map();
 let searchIndexPromise = null;
+let searchActiveIndex = -1;
 
-// Theme Management
 function initTheme() {
   const savedTheme = localStorage.getItem('theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -45,11 +45,9 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme);
 }
 
-// Mobile Sidebar Management
 function toggleSidebar() {
   sidebar.classList.toggle('open');
-  
-  // Add/remove overlay
+
   let overlay = el('.sidebar-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -66,7 +64,6 @@ function closeSidebar() {
   if (overlay) overlay.classList.remove('active');
 }
 
-// Hash and Navigation
 function normalizeHash(hash) {
   const file = decodeURIComponent((hash || '').replace(/^#\/?/, ''));
   if (!file) return 'README.md';
@@ -136,8 +133,9 @@ function matchesSearchQuery(page, query) {
 
   const tokens = q.split(/\s+/).filter(Boolean);
   const content = searchIndex.get(page.file) || '';
+  const title = page.title.toLowerCase();
 
-  return tokens.every((token) => content.includes(token));
+  return tokens.every((token) => content.includes(token) || title.includes(token));
 }
 
 function extractSearchSnippet(file, query) {
@@ -162,34 +160,113 @@ function extractSearchSnippet(file, query) {
   return `${prefix}${preview.slice(start, end).trim()}${suffix}`;
 }
 
-// Sidebar Builder
-function buildSidebar(filter = '') {
-  const q = filter.trim();
+function iconHtml(iconClass) {
+  if (!iconClass) {
+    return '<i class="fa-solid fa-file-lines" aria-hidden="true"></i>';
+  }
+  return `<i class="${escapeHtml(iconClass)}" aria-hidden="true"></i>`;
+}
+
+function highlightSnippet(snippet, query) {
+  let out = escapeHtml(snippet);
+  const tokens = query.trim().split(/\s+/).filter(Boolean);
+  tokens.forEach((token) => {
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+  });
+  return out;
+}
+
+function hideSearchResults() {
+  if (!searchResults) return;
+  searchResults.hidden = true;
+  searchResults.innerHTML = '';
+  searchActiveIndex = -1;
+}
+
+function setSearchActive(index) {
+  const items = Array.from(searchResults.querySelectorAll('.search-result'));
+  if (!items.length) {
+    searchActiveIndex = -1;
+    return;
+  }
+
+  searchActiveIndex = ((index % items.length) + items.length) % items.length;
+  items.forEach((item, i) => {
+    item.classList.toggle('active', i === searchActiveIndex);
+  });
+  items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+}
+
+function openSearchResult(file) {
+  hideSearchResults();
+  search.value = '';
+  location.hash = `#/${encodeURIComponent(file)}`;
+}
+
+function renderSearchResults(query) {
+  const q = query.trim();
+  if (!q) {
+    hideSearchResults();
+    return;
+  }
+
+  const matches = PAGES
+    .filter((p) => matchesSearchQuery(p, q))
+    .map((p) => {
+      const titleHit = p.title.toLowerCase().includes(q.toLowerCase());
+      return {
+        page: p,
+        snippet: extractSearchSnippet(p.file, q),
+        score: titleHit ? 0 : 1,
+      };
+    })
+    .sort((a, b) => a.score - b.score || a.page.title.localeCompare(b.page.title));
+
+  if (!matches.length) {
+    searchResults.innerHTML = `<div class="search-empty">No results for <code>${escapeHtml(q)}</code></div>`;
+    searchResults.hidden = false;
+    searchActiveIndex = -1;
+    return;
+  }
+
+  searchResults.innerHTML = matches.map(({ page, snippet }, i) => `
+    <a class="search-result${i === 0 ? ' active' : ''}" href="#/${encodeURIComponent(page.file)}" role="option" data-file="${escapeHtml(page.file)}" data-index="${i}">
+      <span class="search-result-icon">${iconHtml(page.icon)}</span>
+      <span class="search-result-body">
+        <span class="search-result-title">${escapeHtml(page.title)}</span>
+        ${page.section ? `<span class="search-result-meta">${escapeHtml(page.section)}</span>` : ''}
+        ${snippet ? `<span class="search-result-snippet">${highlightSnippet(snippet, q)}</span>` : ''}
+      </span>
+    </a>
+  `).join('');
+
+  searchResults.hidden = false;
+  searchActiveIndex = 0;
+
+  searchResults.querySelectorAll('.search-result').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openSearchResult(link.dataset.file);
+    });
+  });
+}
+
+function buildSidebar() {
   let html = '';
   let currentSection = null;
-  let hasResults = false;
-  
+
   PAGES.forEach(p => {
-    if (q && !matchesSearchQuery(p, q)) {
-      return;
-    }
-
-    hasResults = true;
-
     if (p.section !== currentSection) {
       if (p.section) {
         html += `<div class="nav-section">${p.section}</div>`;
       }
       currentSection = p.section;
     }
-    const snippet = q ? extractSearchSnippet(p.file, q) : '';
-    html += `<a href="#/${encodeURIComponent(p.file)}" data-file="${p.file}"><span class="nav-icon" aria-hidden="true">${p.icon || '*'}</span><span class="nav-text"><span class="nav-label">${p.title}</span>${snippet ? `<span class="nav-snippet">${escapeHtml(snippet)}</span>` : ''}</span></a>`;
+
+    html += `<a href="#/${encodeURIComponent(p.file)}" data-file="${p.file}"><span class="nav-icon">${iconHtml(p.icon)}</span><span class="nav-text"><span class="nav-label">${p.title}</span></span></a>`;
   });
 
-  if (q && !hasResults) {
-    html = `<div class="nav-empty">No content matches for "<code>${escapeHtml(q)}</code>".</div>`;
-  }
-  
   nav.innerHTML = html;
 
   const currentFile = normalizeHash(location.hash);
@@ -197,8 +274,7 @@ function buildSidebar(filter = '') {
   if (activeLink) {
     activeLink.classList.add('active');
   }
-  
-  // Add click handlers for mobile
+
   nav.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       if (window.innerWidth <= 1000) {
@@ -208,7 +284,6 @@ function buildSidebar(filter = '') {
   });
 }
 
-// Utility Functions
 function slugify(text) {
   return text
     .toLowerCase()
@@ -231,21 +306,19 @@ function enhanceHeadings(container) {
   return Array.from(hs);
 }
 
-// Table of Contents Builder
 function buildTOC(headings) {
-  if (!headings.length) { 
-    toc.innerHTML = ''; 
-    return; 
+  if (!headings.length) {
+    toc.innerHTML = '';
+    return;
   }
-  
+
   const links = headings.map(h => {
     const lvl = h.tagName === 'H2' ? 2 : 3;
     return `<a class="lvl-${lvl}" href="#${h.id}" data-anchor="${h.id}">${h.textContent.replace('#', '')}</a>`;
   }).join('');
-  
+
   toc.innerHTML = `<h4>On this page</h4>${links}`;
 
-  // Add click handlers to prevent page navigation
   toc.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -253,13 +326,11 @@ function buildTOC(headings) {
       const targetElement = document.getElementById(targetId);
       if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Update URL without triggering hashchange
         history.pushState(null, '', `${location.pathname}${location.hash.split('#')[0]}#${targetId}`);
       }
     });
   });
 
-  // Highlight active section on scroll
   const obs = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -269,46 +340,39 @@ function buildTOC(headings) {
         });
       }
     });
-  }, { 
+  }, {
     rootMargin: '-80px 0px -70% 0px',
     threshold: [0, 0.5, 1]
   });
-  
+
   headings.forEach(h => obs.observe(h));
 }
 
-// Page Loader
 async function loadPage(file) {
-  // Update active link in sidebar
   nav.querySelectorAll('a').forEach(a => {
     a.classList.toggle('active', a.dataset.file === file);
   });
 
-  // Show loading state
-  doc.innerHTML = '<div class="loading">Loading documentation...</div>';
+  doc.innerHTML = '<div class="loading"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Loading documentation...</div>';
   toc.innerHTML = '';
 
   try {
-    // Fetch markdown file
     const res = await fetch(file + `?t=${Date.now()}`);
     if (!res.ok) {
       throw new Error(`Failed to load ${file}`);
     }
     const md = await res.text();
-    
-    // Configure marked
+
     marked.setOptions({
       breaks: true,
       gfm: true,
       headerIds: true,
       mangle: false
     });
-    
-    // Parse and render
+
     const html = marked.parse(md);
     doc.innerHTML = html;
 
-    // Fix internal .md links
     doc.querySelectorAll('a[href$=".md"]').forEach(a => {
       const href = a.getAttribute('href');
       const target = PAGES.find(p => p.file.toLowerCase() === href.toLowerCase());
@@ -318,36 +382,31 @@ async function loadPage(file) {
       }
     });
 
-    // Build TOC
     const hs = enhanceHeadings(doc);
     buildTOC(hs);
-    
-    // Update last modified (mock for now)
+
     if (lastUpdated) {
-      const now = new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      const now = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       });
       lastUpdated.textContent = now;
     }
-    
-    // Scroll to top
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
   } catch (err) {
     doc.innerHTML = `
       <div class="error">
-        <h1>⚠️ Error Loading Page</h1>
-        <p>Failed to load <code>${file}</code></p>
-        <p>${err.message}</p>
+        <h1><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Error Loading Page</h1>
+        <p>Failed to load <code>${escapeHtml(file)}</code></p>
+        <p>${escapeHtml(err.message)}</p>
       </div>
     `;
     console.error('Failed to load page:', err);
   }
 }
 
-// Router
 function route() {
   const file = normalizeHash(location.hash);
   const norm = `#/${encodeURIComponent(file)}`;
@@ -357,50 +416,71 @@ function route() {
   loadPage(file);
 }
 
-// Search with keyboard shortcut
 function initSearch() {
   search.addEventListener('input', async (e) => {
     const q = e.target.value;
     if (!q.trim()) {
-      buildSidebar();
+      hideSearchResults();
       return;
     }
 
     await buildSearchIndex();
-    buildSidebar(q);
+    renderSearchResults(q);
   });
-  
-  // Ctrl+K or Cmd+K to focus search
+
+  search.addEventListener('keydown', (e) => {
+    if (searchResults.hidden) {
+      if ((e.key === 'ArrowDown' || e.key === 'Enter') && search.value.trim()) {
+        e.preventDefault();
+        renderSearchResults(search.value);
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSearchActive(searchActiveIndex + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSearchActive(searchActiveIndex - 1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const active = searchResults.querySelector('.search-result.active');
+      if (active) openSearchResult(active.dataset.file);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      search.value = '';
+      hideSearchResults();
+      search.blur();
+    }
+  });
+
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault();
       search.focus();
       search.select();
     }
-    
-    // Escape to clear search
-    if (e.key === 'Escape' && document.activeElement === search) {
-      search.value = '';
-      buildSidebar();
-      search.blur();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrapper')) {
+      hideSearchResults();
     }
   });
 }
 
-// Initialize
 function init() {
   initTheme();
   buildSidebar();
   route();
   initSearch();
   buildSearchIndex();
-  
-  // Event listeners
+
   window.addEventListener('hashchange', route);
   themeToggle.addEventListener('click', toggleTheme);
   sidebarToggle.addEventListener('click', toggleSidebar);
-  
-  // Close sidebar on window resize
+
   window.addEventListener('resize', () => {
     if (window.innerWidth > 1000) {
       closeSidebar();
@@ -408,5 +488,4 @@ function init() {
   });
 }
 
-// Start when DOM is ready
 document.addEventListener('DOMContentLoaded', init);

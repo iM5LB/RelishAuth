@@ -133,7 +133,7 @@ Enter your Discord username: username
 
 **Discord DM**:
 ```
-🔐 Account Verification
+ Account Verification
 
 PlayerName is trying to link this Discord account.
 Click "Verify" to confirm, or "Deny" if this wasn't you.
@@ -143,7 +143,7 @@ Click "Verify" to confirm, or "Deny" if this wasn't you.
 
 **After Verification**:
 ```
-✅ Account linked successfully!
+ Account linked successfully!
 You can now join the server anytime.
 ```
 
@@ -229,7 +229,7 @@ authentication:
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-username-impersonation: true  # ⚠️ Allows impersonation!
+  allow-premium-username-impersonation: true  # Warning: Allows impersonation!
 ```
 
 ### Backend UUIDs (Optional)

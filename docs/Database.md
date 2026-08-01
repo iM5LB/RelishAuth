@@ -43,17 +43,17 @@ Paths are relative to `plugins/relishauth/` folder.
 
 ### Advantages
 
-- ✅ No setup required
-- ✅ No external database server needed
-- ✅ Fast for single-server
-- ✅ Automatic backups easy (just copy file)
-- ✅ No network latency
+-  No setup required
+-  No external database server needed
+-  Fast for single-server
+-  Automatic backups easy (just copy file)
+-  No network latency
 
 ### Disadvantages
 
-- ❌ Not suitable for multi-server networks
-- ❌ No concurrent access from multiple proxies
-- ❌ Limited scalability
+-  Not suitable for multi-server networks
+-  No concurrent access from multiple proxies
+-  Limited scalability
 
 ### Best For
 
@@ -288,18 +288,18 @@ Restart Velocity proxy and check console:
 
 ### Advantages
 
-- ✅ Enterprise-grade reliability
-- ✅ Advanced data types (JSON, arrays, etc.)
-- ✅ Excellent performance with large datasets
-- ✅ Strong ACID compliance
-- ✅ Extensible with custom functions
-- ✅ Multi-server support
+-  Enterprise-grade reliability
+-  Advanced data types (JSON, arrays, etc.)
+-  Excellent performance with large datasets
+-  Strong ACID compliance
+-  Extensible with custom functions
+-  Multi-server support
 
 ### Disadvantages
 
-- ❌ More complex setup than MySQL
-- ❌ Requires PostgreSQL knowledge
-- ❌ Overkill for small servers
+-  More complex setup than MySQL
+-  Requires PostgreSQL knowledge
+-  Overkill for small servers
 
 ### Best For
 
@@ -392,11 +392,11 @@ database:
 
 ### When to Use SSL
 
-- ✅ Database on different server
-- ✅ Untrusted network
-- ✅ Compliance requirements
-- ❌ Database on same server (localhost)
-- ❌ Trusted local network
+-  Database on different server
+-  Untrusted network
+-  Compliance requirements
+-  Database on same server (localhost)
+-  Trusted local network
 
 ## Database Schema
 

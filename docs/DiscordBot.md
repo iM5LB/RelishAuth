@@ -34,13 +34,13 @@ The Discord bot provides:
 3. Click "Yes, do it!"
 4. **Copy the bot token** (you'll need this later)
 
-⚠️ **Important**: Never share your bot token publicly!
+Warning: **Important**: Never share your bot token publicly!
 
 ### 1.3 Configure Bot Settings
 
 Enable these settings under "Privileged Gateway Intents":
-- ✅ **Server Members Intent**
-- ✅ **Message Content Intent**
+-  **Server Members Intent**
+-  **Message Content Intent**
 
 ## Step 2: Configure Bot Permissions
 
@@ -57,14 +57,14 @@ The bot needs these permissions:
 
 1. Go to "OAuth2" → "URL Generator"
 2. Select scopes:
-   - ✅ `bot`
-   - ✅ `applications.commands`
+   -  `bot`
+   -  `applications.commands`
 3. Select permissions:
-   - ✅ Send Messages
-   - ✅ Embed Links
-   - ✅ Use Slash Commands
-   - ✅ Manage Roles
-   - ✅ Read Message History
+   -  Send Messages
+   -  Embed Links
+   -  Use Slash Commands
+   -  Manage Roles
+   -  Read Message History
 4. Copy the generated URL
 
 ## Step 3: Invite Bot to Server
@@ -200,7 +200,7 @@ Check console for:
 3. Receives DM from bot:
 
 ```
-🔐 Account Verification
+ Account Verification
 
 PlayerName is trying to link this Discord account.
 
@@ -217,7 +217,7 @@ If this wasn't you, click Deny.
 When enabled, players receive DMs when someone joins with their account:
 
 ```
-🔔 Login Notification
+ Login Notification
 
 Someone just joined the server with your account!
 
@@ -256,7 +256,7 @@ All Discord slash commands are automatically registered.
 
 > Link Minecraft accounts in-game with `/ra discord <username>` (there is no Discord `/link` slash command).
 
-⚠️ Run **one** RelishAuth instance per bot token. Duplicate bots cause interaction errors like `10062 Unknown interaction`.
+Warning: Run **one** RelishAuth instance per bot token. Duplicate bots cause interaction errors like `10062 Unknown interaction`.
 
 ### Bot Status
 

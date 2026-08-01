@@ -291,7 +291,7 @@ lp group default permission set relishauth.command.unlink false
 
 ### Authentication Bypass
 
-**⚠️ Not Recommended**: Allows players to skip authentication entirely.
+**Warning: Not Recommended**: Allows players to skip authentication entirely.
 
 ```bash
 lp user TrustedPlayer permission set relishauth.bypass true
@@ -438,10 +438,10 @@ lp user PlayerName permission check relishauth.admin
 
 ### Use Permission Plugin
 
-- ✅ Use LuckPerms or similar
-- ❌ Don't rely on fallback admin list
-- ✅ Organize permissions in groups
-- ✅ Use permission inheritance
+-  Use LuckPerms or similar
+-  Don't rely on fallback admin list
+-  Organize permissions in groups
+-  Use permission inheritance
 
 ### Principle of Least Privilege
 

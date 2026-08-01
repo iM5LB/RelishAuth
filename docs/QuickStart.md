@@ -154,4 +154,4 @@ Now that you have basic authentication working, explore these features:
 
 ---
 
-**Congratulations!** 🎉 You've successfully set up RelishAuth. Your server is now protected with advanced authentication.
+**Congratulations!**  You've successfully set up RelishAuth. Your server is now protected with advanced authentication.

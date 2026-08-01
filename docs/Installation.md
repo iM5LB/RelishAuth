@@ -332,4 +332,4 @@ Now that RelishAuth is installed:
 
 ---
 
-**Installation complete!** 🎉 Your server is now protected with RelishAuth.
+**Installation complete!**  Your server is now protected with RelishAuth.
