@@ -126,16 +126,7 @@ security:
 
 ## Session Management
 
-### Session Duration
-
-Control how long players can auto-login with valid sessions (without re-authenticating):
-
-```yaml
-session:
-  duration: "5m"  # Options: 0, 1m, 5m, 15m, 30m, 1h
-```
-
-**How it works**: After successful authentication, players maintain a valid session for the specified duration. During this time, they can rejoin without needing to authenticate again. Once expired, they must authenticate again.
+Option reference (durations, available presets, IP flag): [Configuration → Session Management](Configuration.md#session-management).
 
 **Security vs Convenience**:
 
@@ -148,81 +139,40 @@ session:
 | 30m | Low | Very High | Friendly servers |
 | 1h | Lowest | Highest | Convenience-focused |
 
-### IP Validation
-
-Require same IP for session continuation:
-
-```yaml
-session:
-  allow-different-locations: false
-```
-
-**When `false` (More Secure)**:
-- Players must re-authenticate if IP changes
-- Prevents session hijacking
-- Recommended for high-security servers
-- May inconvenience players with dynamic IPs
-
-**When `true` (More Convenient)**:
-- Players can continue session from different IPs
-- More convenient for mobile players
-- Slightly less secure
-- Recommended for casual servers
+**IP validation** (`session.allow-different-locations`):
+- `false` — re-auth on IP change (safer; harder for dynamic IPs)
+- `true` — sessions survive IP changes (more convenient)
 
 ## Premium Account Security
 
 ### Premium Auto-Login
 
+Keep impersonation disabled:
+
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-username-impersonation: false  # IMPORTANT: Keep false!
+  allow-premium-username-impersonation: false  # Keep false
 ```
 
-**Security Configuration**:
+- **Secure**: Mojang verification; cracked clients cannot join as a premium username
+- **Insecure** (`allow-premium-username-impersonation: true`): anyone can join as that username
 
-**Secure** (Recommended):
-```yaml
-authentication:
-  premium-auto-login: true
-  allow-premium-username-impersonation: false
-```
-- Premium players auto-login
-- Cracked clients cannot impersonate premium accounts
-- Mojang API verification required
-
-**Insecure** (Not Recommended):
-```yaml
-authentication:
-  premium-auto-login: true
-  allow-premium-username-impersonation: true  # Warning: DANGEROUS!
-```
-- Anyone can join as premium username
-- No verification required
-- Allows account impersonation
+Config keys: [Configuration → Premium Auto-Login](Configuration.md#premium-auto-login).  
+How it works for players: [Auth Methods → Premium Auto-Login](AuthMethods.md#premium-auto-login).
 
 ### Backend UUID Injection (Optional)
 
-If you run an offline-mode proxy but want backend Paper servers to see Mojang UUIDs for premium players:
-
-```yaml
-authentication:
-  premium-use-official-uuid: true
-  premium-use-official-uuid-migrate-database: true
-```
-
-**Important**: This changes player identity on the backend (inventories/claims/permissions may not match old offline UUID data).
+Offline proxy → Mojang UUIDs on backends changes player identity (inventories/claims/permissions). Full options: [Configuration → Premium Official UUID Injection](Configuration.md#premium-official-uuid-injection-backend-uuids).
 
 ### Premium Verification
-
-Configure Mojang API verification:
 
 ```yaml
 security:
   premium:
     verification-timeout: 5
-    api-connect-timeout: 5000  # Milliseconds
-    api-read-timeout: 5000     # Milliseconds
+    api-connect-timeout: 5000
+    api-read-timeout: 5000
     api-url: "https://api.mojang.com/users/profiles/minecraft/"
 ```
 

@@ -118,53 +118,20 @@ RelishAuth is now active! Players will be prompted to authenticate when joining.
 
 ### Configure Discord Bot (Optional)
 
-If you want Discord authentication features:
+For Discord auth, create a bot in the [Discord Developer Portal](https://discord.com/developers/applications), set `discord.bot-token` / `discord.server-id`, and invite the bot.
 
-1. **Create Discord Application**:
-   - Go to [Discord Developer Portal](https://discord.com/developers/applications)
-   - Click "New Application"
-   - Navigate to "Bot" section and create a bot
-   - Copy the bot token
-
-2. **Configure in RelishAuth**:
-   ```yaml
-   discord:
-     bot-token: "YOUR_BOT_TOKEN_HERE"
-     server-id: "YOUR_DISCORD_SERVER_ID"
-   ```
-
-3. **Invite bot to your server**:
-   ```
-   https://discord.com/api/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=268435456&scope=bot%20applications.commands
-   ```
-
-[View complete Discord setup guide →](DiscordBot.md)
+[Full Discord setup guide →](DiscordBot.md)
 
 ### Configure Database (Optional)
 
-For multi-server networks, use MySQL:
+SQLite works out of the box. For multi-proxy networks, switch to MySQL/PostgreSQL:
 
-1. **Create MySQL database**:
-   ```sql
-   CREATE DATABASE relishauth;
-   CREATE USER 'relishauth'@'localhost' IDENTIFIED BY 'secure_password';
-   GRANT ALL PRIVILEGES ON relishauth.* TO 'relishauth'@'localhost';
-   FLUSH PRIVILEGES;
-   ```
+```yaml
+database:
+  type: "mysql"  # or postgresql
+```
 
-2. **Configure in RelishAuth**:
-   ```yaml
-   database:
-     type: "mysql"
-     mysql:
-       host: "localhost"
-       port: 3306
-       database: "relishauth"
-       username: "relishauth"
-       password: "secure_password"
-   ```
-
-[View complete database setup guide →](Database.md)
+[Full database setup guide →](Database.md)
 
 ### Set Up Permissions (Optional)
 

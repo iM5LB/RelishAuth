@@ -34,13 +34,13 @@ The Discord bot provides:
 3. Click "Yes, do it!"
 4. **Copy the bot token** (you'll need this later)
 
-Warning: **Important**: Never share your bot token publicly!
+**Important**: Never share your bot token publicly!
 
 ### 1.3 Configure Bot Settings
 
 Enable these settings under "Privileged Gateway Intents":
--  **Server Members Intent**
--  **Message Content Intent**
+- **Server Members Intent**
+- **Message Content Intent**
 
 ## Step 2: Configure Bot Permissions
 
@@ -56,15 +56,8 @@ The bot needs these permissions:
 ### Generate Invite Link
 
 1. Go to "OAuth2" → "URL Generator"
-2. Select scopes:
-   -  `bot`
-   -  `applications.commands`
-3. Select permissions:
-   -  Send Messages
-   -  Embed Links
-   -  Use Slash Commands
-   -  Manage Roles
-   -  Read Message History
+2. Select scopes: `bot`, `applications.commands`
+3. Select the same permissions listed above
 4. Copy the generated URL
 
 ## Step 3: Invite Bot to Server

@@ -401,30 +401,9 @@ lp user PlayerName permission set relishauth.command.reload true
 
 ## Disabling Commands
 
-You can disable specific commands in `config.yml`:
+Toggle individual commands under `commands.commands` in `config.yml` (set a flag to `false` to disable it).
 
-```yaml
-commands:
-  commands:
-    enabled: true
-    
-    player-commands:
-      password: true
-      notify: true
-      logout: true
-      session: true
-      info: true
-      unlink: true
-    
-    admin-commands:
-      info-others: true
-      unlink-others: true
-      reload: true
-      block: true
-      unblock: true
-```
-
-Set to `false` to disable a command.
+Full option list: [Configuration → Slash Commands](Configuration.md#slash-commands).
 
 ## Command Aliases
 

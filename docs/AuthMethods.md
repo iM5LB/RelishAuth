@@ -57,31 +57,7 @@ Type your password in chat (or use /ra password).
 
 ### Password Requirements
 
-Configure password strength:
-
-**Weak (Not Recommended)**:
-```yaml
-password:
-  min-length: 4
-  max-length: 16
-```
-
-**Moderate (Default)**:
-```yaml
-password:
-  min-length: 6
-  max-length: 32
-```
-
-**Strong (Recommended)**:
-```yaml
-password:
-  min-length: 8
-  max-length: 32
-  require-uppercase: true
-  require-numbers: true
-  require-special-chars: true
-```
+Strength rules and Argon2 settings: [Configuration](Configuration.md) and [Security → Password Security](Security.md#password-security).
 
 ### Security Features
 
@@ -190,15 +166,11 @@ You can now join the server anytime.
 ```yaml
 authentication:
   premium-auto-login: true
-  allow-premium-username-impersonation: false  # Security: prevent impersonation
-
-security:
-  premium:
-    verification-timeout: 5
-    api-connect-timeout: 5000
-    api-read-timeout: 5000
-    api-url: "https://api.mojang.com/users/profiles/minecraft/"
+  allow-premium-username-impersonation: false  # Keep false
 ```
+
+Full option reference: [Configuration → Premium Auto-Login](Configuration.md#premium-auto-login).  
+Security notes (impersonation, verification): [Security → Premium Account Security](Security.md#premium-account-security).
 
 ### Player Experience
 
@@ -216,33 +188,9 @@ Please authenticate to continue.
 [Password or Discord authentication prompt]
 ```
 
-### Security Considerations
-
-**Safe Configuration** (Recommended):
-```yaml
-authentication:
-  premium-auto-login: true
-  allow-premium-username-impersonation: false  # Prevents impersonation
-```
-
-**Unsafe Configuration** (Not Recommended):
-```yaml
-authentication:
-  premium-auto-login: true
-  allow-premium-username-impersonation: true  # Warning: Allows impersonation!
-```
-
 ### Backend UUIDs (Optional)
 
-If you run an offline-mode proxy but want backend Paper servers to see Mojang UUIDs for premium players:
-
-```yaml
-authentication:
-  premium-use-official-uuid: true
-  premium-use-official-uuid-migrate-database: true
-```
-
-**Important**: This changes player identity on the backend (inventories/claims/permissions may not match old offline UUID data).
+Offline-mode proxy with Mojang UUIDs on Paper backends: set `premium-use-official-uuid` (and optional DB migrate). See [Configuration → Premium Official UUID Injection](Configuration.md#premium-official-uuid-injection-backend-uuids).
 
 ### Best For
 

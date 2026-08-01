@@ -745,10 +745,11 @@ body {
 }
 
 /* Home hero / logo */
-.doc > p:first-of-type > img[src*="RelishAuth"] {
+/* Home hero banner */
+.doc > p:first-of-type > img[src*="RelishAuthBanner"] {
   display: block;
-  width: auto;
-  max-width: min(100%, 280px);
+  width: 100%;
+  max-width: 100%;
   margin: 8px 0 28px;
   border-radius: 12px;
   box-shadow: 0 8px 28px var(--shadow-lg);

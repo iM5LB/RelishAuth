@@ -1,6 +1,6 @@
 # RelishAuth Documentation
 
-![RelishAuth](assets/RelishAuthRaw.png)
+![RelishAuth](assets/RelishAuthBanner.png)
 
 Official documentation for **RelishAuth** — advanced authentication for Velocity proxy servers.
 

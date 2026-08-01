@@ -163,7 +163,7 @@ authentication:
   allow-premium-username-impersonation: false  # Keep false for security
 ```
 
-**Warning: Security Warning**: Enabling this can allow impersonation of premium accounts unless you add extra authentication checks.
+**Security warning**: Enabling this can allow impersonation of premium accounts unless you add extra authentication checks. See [Security → Premium Account Security](Security.md#premium-account-security).
 
 ### Premium Official UUID Injection (Backend UUIDs)
 
